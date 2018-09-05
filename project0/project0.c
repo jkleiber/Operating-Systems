@@ -7,6 +7,9 @@
 #define SPACE 0x20
 #define WIDTH 4
 
+/*
+ *
+ */
 void add_char(char c, int* occurences)
 {
     /* Declare variable */
@@ -23,18 +26,24 @@ void add_char(char c, int* occurences)
     }
 }
 
+/*
+ *
+ */
 void print_hashtags(int num_hashtags)
 {
     /* Declare variable */
     int i;  //Loop iteration
 
-    //Print the number of hashtags
+    //Print the number of hashtags requested
     for(i = 0; i < num_hashtags; ++i)
     {
-        fprintf(stderr, "#");
+        fprintf(stdout, "#");
     }
 }
 
+/*
+ *
+ */
 int main(int argc, char** argv)
 {
     /* Declare variables */
@@ -46,25 +55,27 @@ int main(int argc, char** argv)
     char upper_char;                        //Highest character in ASCII table to check for in file
     
     /* Initialize variables */
-    upper_char = SPACE; //SPACE character is default
-    lower_char = CLOSING_CURLY_BRACE; //'}' is the default
+    upper_char = SPACE;                 //SPACE character is default
+    lower_char = CLOSING_CURLY_BRACE;   //'}' is the default
+
+    //Initialize occurences array to 0 for all values.
     memset(num_occurences, 0, sizeof(num_occurences));
 
-    //If the upper bound character argument is specified, then set the upper bound
+    //If the upper character argument is specified, then set it
     if(argc == 2)
     {
         upper_char = argv[1][0];
     }
-    //If both the upper and lower bound program arguments are specified, set the new boundaries
+    //If both the upper and lower character arguments are specified, set new boundaries
     else if(argc == 3)
     {
         upper_char = argv[1][0];
         lower_char = argv[2][0];
     }
-    //If an invalid configuration was provided, exitg
+    //If an invalid configuration was provided, exit early
     else if(argc != 1)
     {
-        fprintf(stderr, "Invalid input configuration\n");
+        //fprintf(stderr, "Invalid input configuration\n");
         exit(-1);
     }
 
@@ -82,16 +93,16 @@ int main(int argc, char** argv)
     }
 
     //Print header information
-    fprintf(stderr, "Range: %c-%c\n", upper_char, lower_char);
+    fprintf(stdout, "Range: %c-%c\n", upper_char, lower_char);
 
     //Loop through the array and print output
     for(c = upper_char; c <= lower_char; ++c)
     {
         index = c - SPACE;
 
-        fprintf(stderr, "%c: %*d ", c, WIDTH, num_occurences[index]);
+        fprintf(stdout, "%c: %*d ", c, WIDTH, num_occurences[index]);
         print_hashtags(num_occurences[index]);
-        fprintf(stderr, "\n");
+        fprintf(stdout, "\n");
     }
 
     return 0;

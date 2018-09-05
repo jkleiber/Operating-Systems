@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -c -O3 -Wall
+CFLAGS = -c -O3 -Wall -g
 
 all: project0
 
