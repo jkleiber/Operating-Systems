@@ -5,6 +5,7 @@
 #define CLOSING_CURLY_BRACE 0x7d
 #define NUM_VALID_CHARS 95
 #define SPACE 0x20
+#define WIDTH 4
 
 void add_char(char c, int* occurences)
 {
@@ -19,6 +20,18 @@ void add_char(char c, int* occurences)
     && index <= NUM_VALID_CHARS)
     {
         *(occurences + index) += 1;
+    }
+}
+
+void print_hashtags(int num_hashtags)
+{
+    /* Declare variable */
+    int i;  //Loop iteration
+
+    //Print the number of hashtags
+    for(i = 0; i < num_hashtags; ++i)
+    {
+        fprintf(stderr, "#");
     }
 }
 
@@ -76,7 +89,9 @@ int main(int argc, char** argv)
     {
         index = c - SPACE;
 
-        fprintf(stderr, "%c: %d ->hashtags\n", c, num_occurences[index]);
+        fprintf(stderr, "%c: %*d ", c, WIDTH, num_occurences[index]);
+        print_hashtags(num_occurences[index]);
+        fprintf(stderr, "\n");
     }
 
     return 0;
