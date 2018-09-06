@@ -1,5 +1,7 @@
 CC = gcc
-CFLAGS = -c -O3 -Wall -g
+CFLAGS = -c -Wall -g
+
+#Add back -O3 above
 
 all: project0
 

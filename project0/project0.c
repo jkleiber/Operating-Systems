@@ -82,15 +82,22 @@ int main(int argc, char** argv)
     //Prepare to read file
     cur_char = getchar();
 
+    int i = 1;
+
     //Read files from stdin (piped in from console)
-    while(cur_char != EOF)
+    while(!feof(stdin))
     {
-        //Check to see if the character falls into a valid range in the tracking array
-        add_char(cur_char, num_occurences);
+        if(cur_char != EOF)
+        {
+            //Check to see if the character falls into a valid range in the tracking array
+            add_char(cur_char, num_occurences);
+        }
 
         //Read next character
         cur_char = getchar();
+        i++;
     }
+
 
     //Print header information
     fprintf(stdout, "Range: %c-%c\n", upper_char, lower_char);
