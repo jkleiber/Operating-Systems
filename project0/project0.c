@@ -2,10 +2,53 @@
 #include <stdlib.h>
 #include <string.h>
 
+//Define important constants
 #define CLOSING_CURLY_BRACE 0x7d
 #define NUM_VALID_CHARS 256
 #define SPACE 0x20
 #define WIDTH 4
+
+/*
+ * This function converts two signed chars into a single UTF-8 compliant 
+ * unsigned char
+ * 
+ * @param a the first character in the UTF-8 sequence
+ * @param b the second character in the UTF-8 sequence
+ * @return the character on the UTF-8 table indexed from 0 to 255
+ */
+unsigned char convert_char(char a, char b)
+{
+    /* Declare variables */
+    int             a_idx;
+    int             b_idx;
+    unsigned char   conv_char;
+    unsigned int    u_idx;
+
+    //Initialize variables
+    a_idx = (int)(a - 0);
+    b_idx = (int)(b - 0);
+    u_idx = 0x00;
+
+    //Check to see if the UTF-8 conversion is necessary
+    if(a_idx < 0 && b_idx <= 0)
+    {
+        //Convert the -128-127 range to a 0-255 range
+        a_idx = 127 + (127 + a_idx + 2);
+        b_idx = 127 + (127 + b_idx + 2);
+
+        u_idx = (a_idx & 1) * 64;
+        u_idx += b_idx;
+    }
+    else
+    {
+        u_idx = a_idx;
+    }
+
+    //Set converted char to be the correct table index
+    conv_char = (unsigned char)(u_idx); 
+
+    return conv_char;
+}
 
 /*
  * Adds a character to the occurences array if it is in bounds.
@@ -72,19 +115,13 @@ int main(int argc, char** argv)
     //If the upper character argument is specified, then set it
     if(argc == 2)
     {
-        upper_char = argv[1][0];
+        upper_char = convert_char(argv[1][0], argv[1][1]);
     }
     //If both the upper and lower character arguments are specified, set new boundaries
-    else if(argc == 3)
+    else if(argc >= 3)
     {
-        upper_char = argv[1][0];
-        lower_char = argv[2][0];
-    }
-    //If an invalid configuration was provided, exit early
-    else if(argc != 1)
-    {
-        //fprintf(stderr, "Invalid input configuration\n");
-        exit(-1);
+        upper_char = convert_char(argv[1][0], argv[1][1]);
+        lower_char = convert_char(argv[2][0], argv[2][1]);
     }
 
     //Don't bother reading in the file unless the upper char is equal or lesser than lower char.
@@ -131,8 +168,14 @@ int main(int argc, char** argv)
 
             //Newline
             fprintf(stdout, "\n");
+
+            //Do not increment past the end of the table (to avoid wraparound)
+            if(c == 0xFF)
+            {
+                break;
+            }
         }
     }
-    
+
     return 0;
 }
