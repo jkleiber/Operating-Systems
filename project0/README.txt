@@ -20,7 +20,6 @@ the end, I loop through elements in the array based on the boundary characters
 provided by the user and output the number of times they occured in the file 
 while printing out the corresponding number of # characters.
 
-
 References
 I used https://www.geeksforgeeks.org/eof-and-feof-in-c/ to learn more about 
 feof() and how getchar() handles errors and EOF.
@@ -32,6 +31,9 @@ For help converting two ASCII chars to a single UTF-8 character, I referred to
 this link: https://www.utf8-chartable.de/unicode-utf8-table.pl?utf8=dec. I also 
 referred Trey Sullivent to this link when talking about high-level project 
 requirements.
+
+For my Makefile, I used the things I learned from Dr. Fagg during his in-class 
+demonstration to set it up.
 
 I've used C on Linux a lot for work, so most of this was pretty familiar. I 
 did need to look at the man pages for memset to remember the ordering of the 
