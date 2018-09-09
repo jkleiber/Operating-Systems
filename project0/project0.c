@@ -34,7 +34,7 @@ unsigned char convert_char(char a, char b)
     if(a_idx < 0 && b_idx >= 0x00)
     {
         //Convert the -128-127 range to a 0-255 range
-        u_idx = (256 - a_idx);
+        u_idx = (256 + a_idx);
     }
     //If there is no null termination, convert from UTF-8
     else if(a_idx < 0 && b_idx < 0)
