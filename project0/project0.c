@@ -19,7 +19,7 @@
 unsigned char convert_char(char a, char b)
 {
     /* Declare variables */
-    int             a_idx;      //index of the first input char
+    int             a_idx;      //index of the input char
     int             b_idx;      //index of the second input char
     unsigned char   conv_char;  //the resulting unsigned char
     unsigned int    u_idx;      //the unsigned index, from 0 to 255
@@ -29,8 +29,15 @@ unsigned char convert_char(char a, char b)
     b_idx = (int)(b - 0);
     u_idx = 0x00;
 
-    //Check to see if the UTF-8 conversion is necessary
-    if(a_idx < 0 && b_idx <= 0)
+    //Check to see if a conversion is necessary
+    //If there is a null termination after the first character, convert normally
+    if(a_idx < 0 && b_idx >= 0x00)
+    {
+        //Convert the -128-127 range to a 0-255 range
+        u_idx = (256 - a_idx);
+    }
+    //If there is no null termination, convert from UTF-8
+    else if(a_idx < 0 && b_idx < 0)
     {
         //Convert the -128-127 range to a 0-255 range
         a_idx = 127 + (127 + a_idx + 2);
@@ -40,7 +47,7 @@ unsigned char convert_char(char a, char b)
         u_idx = (a_idx & 1) * 64;
         u_idx += b_idx;
     }
-    //If conversion is not necessary, then just return the first character passed to this function
+    //If conversion is not necessary, then just return the char passed to this function
     else
     {
         u_idx = a_idx;
