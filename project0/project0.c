@@ -19,10 +19,10 @@
 unsigned char convert_char(char a, char b)
 {
     /* Declare variables */
-    int             a_idx;
-    int             b_idx;
-    unsigned char   conv_char;
-    unsigned int    u_idx;
+    int             a_idx;      //index of the first input char
+    int             b_idx;      //index of the second input char
+    unsigned char   conv_char;  //the resulting unsigned char
+    unsigned int    u_idx;      //the unsigned index, from 0 to 255
 
     //Initialize variables
     a_idx = (int)(a - 0);
@@ -36,9 +36,11 @@ unsigned char convert_char(char a, char b)
         a_idx = 127 + (127 + a_idx + 2);
         b_idx = 127 + (127 + b_idx + 2);
 
+        //Combine the two indices to find the unsigned index
         u_idx = (a_idx & 1) * 64;
         u_idx += b_idx;
     }
+    //If conversion is not necessary, then just return the first character passed to this function
     else
     {
         u_idx = a_idx;
