@@ -2,50 +2,69 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/* Macros and pre-compiler constants */
 #define MAX_BUFFER 	1024       // max line buffer
 #define MAX_ARGS 	64         // max # args
 #define SEPARATORS 	" \t\n"    // token sparators
-   
+
+/* External variables */
+extern char **environ;         // environment array
+
+/*
+ *
+ * 
+ */
 int main (int argc, char ** argv)
 {
     /* Declare and initialize constants */
-    const char *prompt = "==>" ;	// shell prompt
-
+    const char *prompt = "==>" ;	// shell prompt 
+    
     /* Declare local variables */
-	char  **arg;            //working pointer thru args
-	char   *args[MAX_ARGS]; //pointers to arg strings
+    char  **arg;            //working pointer thru args
+    char   *args[MAX_ARGS]; //pointers to arg strings
     char    buf[MAX_BUFFER];//line buffer
-	int     result;         //return value of command arg
-
+    char  **env;            //environment variables
+    int     result;         //return value of command arg   
+    
     /* Initialize variables */
     result = 0;
-
+    env    = environ;
+    
     // Read command inputs until "quit" command or eof of redirected input
     while(!feof(stdin)) 
-	{
-		//Write the prompt
+    {
+        //Write the prompt
         fputs(prompt, stdout);       
-		
-		//Read a line from stdin
-        if(fgets (buf, MAX_BUFFER, stdin ))
-		{
-            // Tokenize the input into args array
-            // Note: the last entry will be NULL
+
+    	//Read a line from stdin
+        if(fgets(buf, MAX_BUFFER, stdin ))
+        {
+            //Given the input as a string, tokenize each input argument
+            //Store each token in the args array by pointing to them with the arg pointers
+            //Note: the last entry in the list will be NULL
             arg = args;
-            *arg++ = strtok(buf,SEPARATORS);
-            while((*arg++ = strtok(NULL,SEPARATORS)));
- 
-			//If there are any arguments, then check for commands
+
+            //Set up the string tokenization
+            *arg = strtok(buf,SEPARATORS);
+            arg++;
+
+            //Go through the current string until it ends
+            while((*arg = strtok(NULL,SEPARATORS)))
+            {
+                arg++;
+            }
+
+            //If there are any arguments, then check for commands
             if(args[0]) 
-			{
+    		{
                 //esc -> quit program
-            	if (!strcmp(args[0],"esc")) 
-				{
+                if (!strcmp(args[0],"esc")) 
+                {
                     break;
-				}
-				//wipe -> clear
+                }
+                //wipe -> clear
                 else if (!strcmp(args[0],"wipe"))
-				{ 
+                { 
                     result = system("clear");
                 }
                 //filez [target] -> ls -l [target]
@@ -58,7 +77,13 @@ int main (int argc, char ** argv)
                 //environ -> env
                 else if(!strcmp(args[0], "environ"))
                 {
-                    //TODO: implementation
+                    env = environ;
+
+                    while(*env)
+                    {
+                        fprintf(stdout, "%s\n", *env);
+                        env++;
+                    }
                 }
                 //ditto -> echo (using fprintf here)
                 else if(!strcmp(args[0], "ditto"))
