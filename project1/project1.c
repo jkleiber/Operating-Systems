@@ -8,7 +8,6 @@
 #define FALSE 0
 #define TRUE  1
 
-#define MORPH_OP 0
 #define MIMIC_OP 1
 #define HELP_OP 2
 
@@ -19,6 +18,71 @@
 
 /* External variables */
 extern char **environ;         // environment array
+
+int change_dir(char *dst)
+{
+    /* Declare local variables */
+    int result;                //Result of any external operations
+    char work_dir[MAX_BUFFER]; //Working directory placeholder variable
+
+    //Initialize variables
+    result = 0;
+    //work_dir = (char*)malloc(5 * sizeof(char));
+
+    if(dst == NULL)
+    {
+        //Print the working directory if it is found
+        if(getcwd(work_dir, sizeof(work_dir)))
+        {
+            fprintf(stdout, "%s\n", work_dir);
+
+            //Free dynamic memory
+            //free(work_dir);
+        }
+        //Otherwise indicate an error occurred
+        else
+        {
+            return -100;
+        }
+    }
+    else
+    {
+        //Reallocate memory to fit the argument
+        //work_dir = (char*)realloc(work_dir, (strlen(dst) + 5) * sizeof(char));
+
+        //Change the directory
+        result = chdir(dst);
+        
+        //If the chdir() succeeds, set the PWD variable
+        if(result == 0 && work_dir != NULL)
+        {
+            //Update the PWD variable
+            work_dir[0] = '\0';
+            strcat(work_dir, "PWD=");
+            strcat(work_dir, dst);
+            result =  putenv(work_dir);
+
+            //Free dynamic memory
+            //free(work_dir);
+        }
+    }
+
+    
+
+    //Return the most recent status (!=0 --> error)
+    return result;
+}
+
+/*
+ *
+ * 
+ */
+int doMorph(char *src, char *dst)
+{
+
+
+    return 0;
+}
 
 /*
  *
@@ -32,6 +96,9 @@ int file_operations(char *src, char *dst, int operation)
     size_t  num_read;   //number of items read from file
     FILE   *src_file;   //source file pointer
 
+    //Initialize dst file
+    dst_file = NULL;
+
     //Open the source file
     src_file = fopen(src, "r");
 
@@ -39,8 +106,11 @@ int file_operations(char *src, char *dst, int operation)
     if(src_file)
     {
         //Create/open the dst file
-        dst_file = fopen(dst, "w");
-
+        if(operation != HELP_OP)
+        {
+            dst_file = fopen(dst, "w");
+        }
+        
         //If fopen succeeded, perform the copy/move/print
         if(dst_file
         || operation == HELP_OP)
@@ -61,7 +131,6 @@ int file_operations(char *src, char *dst, int operation)
                     
                     //Move data between files if it is a mimic or a morph
                     case MIMIC_OP:
-                    case MORPH_OP:
                         fwrite(&data, sizeof(char), 1, dst_file);
                         break;
 
@@ -76,12 +145,10 @@ int file_operations(char *src, char *dst, int operation)
 
             //Close the files
             fclose(src_file);
-            fclose(dst_file);
 
-            //Delete the source file if this is a morph
-            if(operation == MORPH_OP)
+            if(dst_file)
             {
-                remove(src);
+                fclose(dst_file);
             }
 
             //Print a line for the next command after a help command
@@ -113,29 +180,23 @@ int file_operations(char *src, char *dst, int operation)
 int main (int argc, char ** argv)
 {
     /* Declare and initialize constants */
+    static char *help_path = "/home/justin/projects/Operating-Systems/project1/README.txt";
     const char *prompt = "==>" ;	// shell prompt
-    const char *help_path = "/home/justin/projects/Operating-Systems/project1/README.txt";
     
     /* Declare local variables */
-    char  **arg;                    //working pointer thru args
-    char   *args[MAX_ARGS];         //pointers to arg strings
-    int     batch_input;            //is stdin a batch input file?
-    char    buf[MAX_BUFFER];        //line buffer
-    char    command[MAX_BUFFER];    //command output to the real
-    char  **env;                    //environment 
-    char    file_char;              //variable for reading readme one char at a time
-    size_t  num_read;               //number of items read from file
-    char    orig_input[MAX_BUFFER]; //the user's original input
-    int     result;                 //return value of command arg
-    char    work_dir[MAX_BUFFER];   //working directory of the program
+    char  **arg;            //working pointer thru args
+    char   *args[MAX_ARGS]; //pointers to arg strings
+    int     batch_input;    //is stdin a batch input file?
+    char    buf[MAX_BUFFER];//line buffer
+    char   *command;        //command output to the system
+    char  **env;            //environment
+    char   *orig_input;     //the user's original input
+    int     result;         //return value of command arg
     
     /* Initialize variables */
     result      = 0;
     batch_input = FALSE;
     env         = environ;
-    work_dir[0] = '.';
-    work_dir[1] = '/';
-    work_dir[2] = '\0';
 
     //Check to see if there is a batch file being included as a program argument
     if(argc >= 2)
@@ -163,7 +224,7 @@ int main (int argc, char ** argv)
         if(fgets(buf, MAX_BUFFER, stdin))
         {
             //Save the original input
-            strcpy(orig_input, buf);
+            orig_input = strdup(buf);
 
             //If a batch file is being read in, print the input
             if(batch_input == TRUE)
@@ -202,17 +263,23 @@ int main (int argc, char ** argv)
                 //filez [target] -> ls -1 [target]
                 else if(!strcmp(args[0], "filez"))
                 {
+                    //Allocate memory to the command variable and init
+                    command = (char*)malloc(7 * sizeof(char));
                     command[0] = '\0';                   
 
                     //Form the command
                     strcat(command, "ls -1 ");
                     if(args[1] != NULL)
                     {
+                        command = (char*)realloc(command, (7 + strlen(args[1])) * sizeof(char));
                         strcat(command, args[1]);
                     }
                     
                     //Show the files
                     result = system(command);
+
+                    //Deallocate command variable
+                    free(command);
                 }
                 //environ -> env
                 else if(!strcmp(args[0], "environ"))
@@ -230,15 +297,26 @@ int main (int argc, char ** argv)
                 //ditto -> echo
                 else if(!strcmp(args[0], "ditto"))
                 {
+                    //Allocate memory to command variable and initialize
+                    command = (char*)malloc(6 * sizeof(char));
                     command[0] = '\0';
 
-                    //Form the echo command
-                    strcat(command, "echo ");
-                    strncpy(&orig_input[0], &orig_input[6], strlen(orig_input));
-                    strcat(command, orig_input);
+                    //If there is something to echo, do it.
+                    if(args[1] != NULL)
+                    {
+                        command = (char*)realloc(command, (strlen(orig_input))*sizeof(char));
 
-                    //Execute the echo command
-                    result = system(command);
+                        //Form the echo command
+                        strcat(command, "echo ");
+                        strncpy(&orig_input[0], &orig_input[6], strlen(orig_input));
+                        strcat(command, orig_input);
+
+                        //Execute the echo command
+                        result = system(command);
+                    }
+
+                    //Free dynamically allocated memory
+                    free(command);
                 }
                 //help -> Print readme
                 else if(!strcmp(args[0], "help"))
@@ -273,7 +351,7 @@ int main (int argc, char ** argv)
                     //Make sure that the source and destination are defined
                     if(args[1] != NULL && args[2] != NULL)
                     {
-                        file_operations(args[1], args[2], MORPH_OP);
+                        doMorph(args[1], args[2]);
                     }
                     else
                     {
@@ -283,31 +361,7 @@ int main (int argc, char ** argv)
                 //cd, chdir [directory] -> change to the target directory
                 else if(!strcmp(args[0], "chdir") || !strcmp(args[0], "cd"))
                 {
-                    //Re-initialize the command string
-                    command[0] = '\0';
-
-                    //If the user wants to change directories to a certain target, they can
-                    if(args[1] != NULL)
-                    {
-                        //Change the directory
-                        result = chdir(args[1]);
-                        
-                        //If the chdir() succeeds, set the PWD variable
-                        if(result == 0)
-                        {
-                            //Update the PWD variable
-                            work_dir[0] = '\0';
-                            strcat(work_dir, "PWD=");
-                            strcat(work_dir, args[1]);
-                            result =  putenv(work_dir);
-                        }
-                    }
-                    //Otherwise, show the current directory contents
-                    else
-                    {
-                        strcat(command, "ls -1");
-                        result = system(command);
-                    }
+                    result = change_dir(args[1]);
                 }
                 //Otherwise pass command onto OS
                 else
@@ -324,7 +378,11 @@ int main (int argc, char ** argv)
                     result = 0;
                 }
             }
+
+            //Free dynamically allocated memory
+            free(orig_input);
         }
     }
+
     return 0; 
 }
