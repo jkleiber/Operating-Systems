@@ -67,8 +67,6 @@ int change_dir(char *dst)
         }
     }
 
-    
-
     //Return the most recent status (!=0 --> error)
     return result;
 }

@@ -40,3 +40,6 @@ https://www.linuxquestions.org/questions/programming-9/extract-substring-from-st
 
 For detecting if stdin was from a terminal or a redirection, I found this link: 
 https://stackoverflow.com/questions/26747597/perform-action-if-input-is-redirected
+
+To find the current working directory, I found this documentation: 
+http://pubs.opengroup.org/onlinepubs/009695399/functions/getcwd.html
