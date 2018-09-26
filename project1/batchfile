@@ -12,5 +12,12 @@ touch proof2.txt
 morph proof2.txt ../
 filez
 erase proof2.txt
+mkdir -p lmaoo/lol/rofl
+erase lmaoo
+filez
+erase lmaoo/lol/rofl
+erase lmaoo/lol
+erase lmaoo
+filez
 chdir ../
 filez

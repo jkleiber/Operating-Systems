@@ -72,7 +72,7 @@ void change_dir(char *dst)
 {
     /* Declare local variables */
     int result;                //Result of any external operations
-    char work_dir[MAX_BUFFER]; //Working directory placeholder variable
+    char *work_dir; //Working directory placeholder variable
 
     //Initialize variables
     result = 0;
@@ -80,12 +80,10 @@ void change_dir(char *dst)
     if(dst == NULL)
     {
         //Print the working directory if it is found
-        if(getcwd(work_dir, sizeof(work_dir)))
-        {
-            fprintf(stdout, "%s\n", work_dir);
-        }
+        result = system("pwd");
+
         //Otherwise indicate an error occurred
-        else
+        if(result)
         {
             fprintf(stderr, "Failed to get current working directory.\n");
         }
@@ -98,11 +96,16 @@ void change_dir(char *dst)
         //If the chdir() succeeds, set the PWD variable
         if(result == 0)
         {
-            //Update the PWD variable
+            //Allocate and init the working directory
+            work_dir = (char*)malloc((strlen(dst)+5) * sizeof(char));
             work_dir[0] = '\0';
+
+            //Update the PWD variable
             strcat(work_dir, "PWD=");
             strcat(work_dir, dst);
             result =  putenv(work_dir);
+
+            free(work_dir);
 
             if(result)
             {
@@ -357,10 +360,6 @@ int main (int argc, char ** argv)
                         //Execute the echo command
                         result = system(command);
                     }
-                    else
-                    {
-                        fprintf(stderr, "Input error: Missing arguments for ditto, use ditto [message]\n");
-                    }
 
                     //Free dynamically allocated memory
                     free(command);
@@ -436,7 +435,7 @@ int main (int argc, char ** argv)
                     }
                 }
                 //cd, chdir [directory] -> change to the target directory
-                else if(!strcmp(args[0], "chdir") || !strcmp(args[0], "cd"))
+                else if(!strcmp(args[0], "chdir"))
                 {
                     change_dir(args[1]);
                 }
@@ -445,6 +444,9 @@ int main (int argc, char ** argv)
                 {
                     //Execute the unrecognized command
                     result = system(orig_input);
+                    
+                    //if the external program fails, let it output its own error message
+                    result = 0;
                 }
 
                 /* Error Handling */
