@@ -3,11 +3,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <libgen.h>
 
 /* Macros */
 #define FALSE 0
 #define TRUE  1
 
+//Mimic and Help commands
 #define MIMIC_OP 1
 #define HELP_OP 2
 
@@ -19,7 +21,54 @@
 /* External variables */
 extern char **environ;         // environment array
 
-int change_dir(char *dst)
+/*
+ * generalErrorHandler - custom error handler when the special commands run
+ * into system errors. Converts errno to a nicer message and prints that to 
+ * stderr as well
+ * 
+ * @param *arg: the command that generated the error
+ */
+void generalErrorHandler(char *arg)
+{
+    //Wipe error
+    if(!strcmp(arg, "wipe"))
+    {
+        fprintf(stderr, "wipe failed: %s\n", strerror(errno));
+    }
+    //Filez error
+    else if(!strcmp(arg, "filez"))
+    {
+        fprintf(stderr, "filez failed: %s\n", strerror(errno));
+    }
+    //Ditto error
+    else if(!strcmp(arg, "ditto"))
+    {
+        fprintf(stderr, "ditto unsuccessful, system error: %s\n", strerror(errno));
+    }
+    //Erase error
+    else if(!strcmp(arg, "erase"))
+    {
+        fprintf(stderr, "unable to erase, error: %s\n", strerror(errno));
+    }
+    //Morph error
+    else if(!strcmp(arg, "morph"))
+    {
+        fprintf(stderr, "morph not successful: %s\n", strerror(errno));
+    }
+    //Print general error if we don't know what command this is
+    else
+    {
+        fprintf(stderr, "%s", strerror(errno));
+    }
+}
+
+/*
+ * change_dir - changes the directory of the program when user calls chdir.
+ * Sets the PWD environment variable to make the command 'stick'
+ * 
+ * @param *dst: destination path to change to.
+ */
+void change_dir(char *dst)
 {
     /* Declare local variables */
     int result;                //Result of any external operations
@@ -27,7 +76,6 @@ int change_dir(char *dst)
 
     //Initialize variables
     result = 0;
-    //work_dir = (char*)malloc(5 * sizeof(char));
 
     if(dst == NULL)
     {
@@ -35,26 +83,20 @@ int change_dir(char *dst)
         if(getcwd(work_dir, sizeof(work_dir)))
         {
             fprintf(stdout, "%s\n", work_dir);
-
-            //Free dynamic memory
-            //free(work_dir);
         }
         //Otherwise indicate an error occurred
         else
         {
-            return -100;
+            fprintf(stderr, "Failed to get current working directory.\n");
         }
     }
     else
     {
-        //Reallocate memory to fit the argument
-        //work_dir = (char*)realloc(work_dir, (strlen(dst) + 5) * sizeof(char));
-
         //Change the directory
         result = chdir(dst);
         
         //If the chdir() succeeds, set the PWD variable
-        if(result == 0 && work_dir != NULL)
+        if(result == 0)
         {
             //Update the PWD variable
             work_dir[0] = '\0';
@@ -62,31 +104,30 @@ int change_dir(char *dst)
             strcat(work_dir, dst);
             result =  putenv(work_dir);
 
-            //Free dynamic memory
-            //free(work_dir);
+            if(result)
+            {
+                generalErrorHandler("chdir");
+            }
+        }
+        //chdir() failed, so notify user
+        else
+        {
+            fprintf(stderr, "Changing the directory failed: %s\n", strerror(errno));
         }
     }
-
-    //Return the most recent status (!=0 --> error)
-    return result;
 }
 
-/*
- *
- * 
- */
-int doMorph(char *src, char *dst)
-{
-
-
-    return 0;
-}
 
 /*
- *
+ * file_pperations - runs the mimic and help commands by reading files byte
+ * by byte and either printing it to stdout or by copying the data to another
+ * location on disk
  * 
+ * @param *src: filepath to the source/README file.
+ * @param *dst: filepath to the destination file (NULL if help command)
+ * @param operation: the operation being performed (help or morph)
  */
-int file_operations(char *src, char *dst, int operation)
+void file_operations(char *src, char *dst, int operation)
 {
     /* Declare local variables */
     char    data;       //data to move between files
@@ -144,6 +185,7 @@ int file_operations(char *src, char *dst, int operation)
             //Close the files
             fclose(src_file);
 
+            //If the dst file is not NULL, close it.
             if(dst_file)
             {
                 fclose(dst_file);
@@ -157,23 +199,29 @@ int file_operations(char *src, char *dst, int operation)
         }
         else
         {
-            //Indicate that there was a problem with the src_file operation
-            return -100;
+            //Indicate that there was a problem with the dst_file operation
+            fprintf(stderr, "Mimic could not open target destination for writing\n");
         }
     }
     else
     {
-        //Indicate that there was a problem with the src_file operation
-        return -100;
+        if(operation == HELP_OP)
+        {
+            fprintf(stderr, "README file could not be opened. System error: %s\n", strerror(errno));
+        }
+        else
+        {
+            fprintf(stderr, "Mimic could not open %s for reading. System error: %s\n", src, strerror(errno));
+        }
     }
-
-    //No errors to report
-    return 0;
 }
 
 /*
- *
+ * main - runs the majority of the program and passes more complicated stuff
+ * to external functions
  * 
+ * @param argc: number of program arguments
+ * @param **argv: program arguments
  */
 int main (int argc, char ** argv)
 {
@@ -188,6 +236,7 @@ int main (int argc, char ** argv)
     char    buf[MAX_BUFFER];//line buffer
     char   *command;        //command output to the system
     char  **env;            //environment
+    char   *name;           //file name
     char   *orig_input;     //the user's original input
     int     result;         //return value of command arg
     
@@ -211,12 +260,8 @@ int main (int argc, char ** argv)
     // Read command inputs until "quit" command or eof of redirected input
     while(!feof(stdin)) 
     {
-        //Only show a prompt when no batch input is being used
-        if(batch_input == FALSE)
-        {
-            //Write the prompt
-            fputs(prompt, stdout);       
-        }
+        //Write the prompt
+        fputs(prompt, stdout);
 
     	//Read a line from stdin
         if(fgets(buf, MAX_BUFFER, stdin))
@@ -312,6 +357,10 @@ int main (int argc, char ** argv)
                         //Execute the echo command
                         result = system(command);
                     }
+                    else
+                    {
+                        fprintf(stderr, "Input error: Missing arguments for ditto, use ditto [message]\n");
+                    }
 
                     //Free dynamically allocated memory
                     free(command);
@@ -319,7 +368,7 @@ int main (int argc, char ** argv)
                 //help -> Print readme
                 else if(!strcmp(args[0], "help"))
                 {
-                    result = file_operations(help_path, NULL, HELP_OP);
+                    file_operations(help_path, NULL, HELP_OP);
                 }
                 //mimic [src] [dst] -> cp [src] [dst] (not using system())
                 else if(!strcmp(args[0], "mimic"))
@@ -327,7 +376,7 @@ int main (int argc, char ** argv)
                     //Make sure that the source and destination are defined
                     if(args[1] != NULL && args[2] != NULL)
                     {
-                        result = file_operations(args[1], args[2], MIMIC_OP);
+                        file_operations(args[1], args[2], MIMIC_OP);
                     }
                     else
                     {
@@ -342,14 +391,44 @@ int main (int argc, char ** argv)
                     {
                         result = remove(args[1]);
                     }
+                    else
+                    {
+                        fprintf(stderr, "Input Error: File target missing; use format erase [file].\n");
+                    }
                 }
                 //morph [src] [dst] -> mv [src] [dst] (not using system())
                 else if(!strcmp(args[0], "morph"))
                 {
-                    //Make sure that the source and destination are defined
+                    //Perform morph operation iff both args aren't null
                     if(args[1] != NULL && args[2] != NULL)
                     {
-                        doMorph(args[1], args[2]);
+                        //If args[2] is a directory, append the current file's name on the end.
+                        if(args[2][strlen(args[2]) - 1] == '/')
+                        {
+                            //Get the file's non-path name
+                            name = basename(args[1]);
+
+                            //Allocate command based on the file's name and dst path
+                            command = (char*)malloc((strlen(args[2]) + strlen(name)) * sizeof(char));
+                            command[0] = '\0';
+
+                            //Add the directory path to command
+                            strcat(command, args[2]);
+
+                            //Add the file's name to the directory
+                            strcat(command, name);
+                        }
+                        else
+                        {
+                            //Duplicate the file string to command var
+                            command = strdup(args[2]);
+                        }
+
+                        //Perform the move
+                        result = rename(args[1], command);
+
+                        //Free dynamic memory
+                        free(command);
                     }
                     else
                     {
@@ -359,7 +438,7 @@ int main (int argc, char ** argv)
                 //cd, chdir [directory] -> change to the target directory
                 else if(!strcmp(args[0], "chdir") || !strcmp(args[0], "cd"))
                 {
-                    result = change_dir(args[1]);
+                    change_dir(args[1]);
                 }
                 //Otherwise pass command onto OS
                 else
@@ -372,7 +451,7 @@ int main (int argc, char ** argv)
                 //If there was an error, print a notification to stderr
                 if(result != 0)
                 {
-                    fprintf(stderr, "%s", strerror(errno));
+                    generalErrorHandler(args[0]);
                     result = 0;
                 }
             }

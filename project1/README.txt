@@ -14,6 +14,9 @@ In general, I leaned on the man pages, lecture notes, and given code for help
 on this assignment. When I didn't know how to do something, I searched online,
 and those links are below.
 
+I talked to Alex Miller about possible ways to implement the morph feature 
+after the new requirements were released.
+
 In the past when I wanted to copy strings, I've used strcpy. I referenced man
 pages for this, but it was interesting to learn the differences between strcpy
 and strdup here:
@@ -43,3 +46,7 @@ https://stackoverflow.com/questions/26747597/perform-action-if-input-is-redirect
 
 To find the current working directory, I found this documentation: 
 http://pubs.opengroup.org/onlinepubs/009695399/functions/getcwd.html
+
+For finding the filename in a path, I found out about basename through google
+leading me to the man page for it:
+http://man7.org/linux/man-pages/man3/basename.3.html
