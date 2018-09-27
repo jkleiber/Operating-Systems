@@ -106,6 +106,7 @@ void change_dir(char *dst)
             result =  putenv(work_dir);
 
             free(work_dir);
+            work_dir = NULL;
 
             if(result)
             {
@@ -335,6 +336,7 @@ int main (int argc, char ** argv)
 
                     //Deallocate command variable
                     free(command);
+                    command = NULL;
                 }
                 //environ -> env
                 else if(!strcmp(args[0], "environ"))
@@ -368,6 +370,7 @@ int main (int argc, char ** argv)
 
                         //Free dynamically allocated memory
                         free(command);
+                        command = NULL;
                     }
                 }
                 //help -> Print readme
@@ -422,22 +425,30 @@ int main (int argc, char ** argv)
 
                             //Add the file's name to the directory
                             strcat(command, name);
+
+                            //Perform the move
+                            result = rename(args[1], command);
+
+                            //Free dynamic memory
+                            free(command);
+                            command = NULL;
                         }
                         else
                         {
                             //Duplicate the file string to command var
                             command = strdup(args[2]);
+
+                            //Perform the move
+                            result = rename(args[1], command);
+
+                            //Free dynamic memory
+                            free(command);
+                            command = NULL;
                         }
-
-                        //Perform the move
-                        result = rename(args[1], command);
-
-                        //Free dynamic memory
-                        free(command);
                     }
                     else
                     {
-                        fprintf(stderr, "Input Error: use format morph [src] [dst]");
+                        fprintf(stderr, "Input Error: use format morph [src] [dst]\n");
                     }
                 }
                 //cd, chdir [directory] -> change to the target directory
@@ -463,11 +474,8 @@ int main (int argc, char ** argv)
                     result = 0;
                 }
             }
-
-            //Free dynamically allocated memory
-            free(orig_input);
         }
     }
-
+    
     return 0; 
 }

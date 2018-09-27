@@ -55,6 +55,8 @@ command is run because its child process ends.
 If the batch file submitted to the program does not exist (or is not a file)
 the program closes and prints an error.
 
+Morph and mimic will not create new directories, so dst must be a valid path.
+
 References
 In general, I leaned on the man pages, lecture notes, and given code for help 
 on this assignment. When I didn't know how to do something, I searched online,
