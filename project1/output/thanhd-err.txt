@@ -1,7 +1,6 @@
 ls: cannot access 'a': No such file or directory
 filez failed: Success
 ls: cannot access 'a': No such file or directory
-mkdir: cannot create directory ‘abc’: File exists
 ls: cannot access 'b': No such file or directory
 filez failed: Success
 ls: cannot access 'b': No such file or directory

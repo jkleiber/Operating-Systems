@@ -5,14 +5,9 @@
 Makefile
 README.txt
 a
-abc
 b
 batchfile
 c
-d
-dir2
-file3
-l
 output
 project1
 project1.c
@@ -35,10 +30,6 @@ abc
 b
 batchfile
 c
-d
-dir2
-file3
-l
 output
 project1
 project1.c
@@ -63,9 +54,6 @@ abc
 b
 batchfile
 d
-dir2
-file3
-l
 output
 project1
 project1.c
