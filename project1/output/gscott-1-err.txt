@@ -1,0 +1,4 @@
+Mimic could not open file1 for reading. System error: No such file or directory
+morph not successful: Is a directory
+unable to erase, error: No such file or directory
+unable to erase, error: No such file or directory

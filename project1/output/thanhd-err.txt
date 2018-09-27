@@ -1,0 +1,13 @@
+ls: cannot access 'a': No such file or directory
+filez failed: Success
+ls: cannot access 'a': No such file or directory
+mkdir: cannot create directory ‘abc’: File exists
+ls: cannot access 'b': No such file or directory
+filez failed: Success
+ls: cannot access 'b': No such file or directory
+unable to erase, error: No such file or directory
+Mimic could not open e for reading. System error: No such file or directory
+Mimic could not open t for reading. System error: No such file or directory
+morph not successful: No such file or directory
+morph not successful: Device or resource busy
+Input Error: use format morph [src] [dst]

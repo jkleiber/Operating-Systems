@@ -260,6 +260,13 @@ int main (int argc, char ** argv)
         batch_input = TRUE;
     }
     
+    //If a batch file is not existant or is not a file, print an error and exit
+    if(!stdin)
+    {
+        fprintf(stderr, "Error opening batch file: %s\n", strerror(errno));
+        return 0;
+    }
+
     // Read command inputs until "quit" command or eof of redirected input
     while(!feof(stdin)) 
     {
@@ -276,8 +283,9 @@ int main (int argc, char ** argv)
             if(batch_input == TRUE)
             {
                 fprintf(stdout, "%s", orig_input);
+                fflush(stdout);
             }
-
+            
             //Given the input as a string, tokenize each input argument
             //Store each token in the args array by pointing to them with the arg pointers
             //Note: the last entry in the list will be NULL
@@ -317,8 +325,9 @@ int main (int argc, char ** argv)
                     strcat(command, "ls -1 ");
                     if(args[1] != NULL)
                     {
-                        command = (char*)realloc(command, (7 + strlen(args[1])) * sizeof(char));
-                        strcat(command, args[1]);
+                        command = (char*)realloc(command, (7 + strlen(orig_input)) * sizeof(char));
+                        strncpy(&orig_input[0], &orig_input[6], strlen(orig_input));
+                        strcat(command, orig_input);
                     }
                     
                     //Show the files
@@ -343,14 +352,11 @@ int main (int argc, char ** argv)
                 //ditto -> echo
                 else if(!strcmp(args[0], "ditto"))
                 {
-                    //Allocate memory to command variable and initialize
-                    command = (char*)malloc(6 * sizeof(char));
-                    command[0] = '\0';
-
                     //If there is something to echo, do it.
                     if(args[1] != NULL)
                     {
-                        command = (char*)realloc(command, (strlen(orig_input))*sizeof(char));
+                        command = (char*)malloc((strlen(orig_input) + 6)*sizeof(char));
+                        command[0] = '\0';
 
                         //Form the echo command
                         strcat(command, "echo ");
@@ -359,10 +365,10 @@ int main (int argc, char ** argv)
 
                         //Execute the echo command
                         result = system(command);
-                    }
 
-                    //Free dynamically allocated memory
-                    free(command);
+                        //Free dynamically allocated memory
+                        free(command);
+                    }
                 }
                 //help -> Print readme
                 else if(!strcmp(args[0], "help"))

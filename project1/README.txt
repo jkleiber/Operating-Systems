@@ -41,11 +41,19 @@ erase [target] - deletes a file from the filesystem. The target is required
 
 You can also run any normal linux command through this shell.
 
+To run a batch file through this shell, perform one of the following operations
+./project1 <file>
+./project1 < <file>
+cat <file> | ./project1
+
 Known Bugs/Assumptions
 My code assumes that all directory paths end with a forward slash.
 I also made the assumption that only files will be copied with mimic.
 When the linux command 'cd' is executed, its effect does not stick after the 
 command is run because its child process ends.
+
+If the batch file submitted to the program does not exist (or is not a file)
+the program closes and prints an error.
 
 References
 In general, I leaned on the man pages, lecture notes, and given code for help 
