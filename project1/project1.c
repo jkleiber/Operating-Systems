@@ -229,7 +229,7 @@ void file_operations(char *src, char *dst, int operation)
 int main (int argc, char ** argv)
 {
     /* Declare and initialize constants */
-    static char *help_path = "/home/justin/projects/Operating-Systems/project1/README.txt";
+    static char *help_path = "/projects/1/README.txt";
     const char *prompt = "==>" ;	// shell prompt
     
     /* Declare local variables */
