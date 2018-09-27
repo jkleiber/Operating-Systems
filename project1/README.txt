@@ -96,3 +96,6 @@ https://stackoverflow.com/questions/26747597/perform-action-if-input-is-redirect
 For finding the filename in a path, I found out about basename through google
 leading me to the man page for it:
 http://man7.org/linux/man-pages/man3/basename.3.html
+
+For an idea about pointer tracking:
+https://stackoverflow.com/questions/8300853/how-to-check-if-a-pointer-is-freed-already-in-c
