@@ -7,8 +7,8 @@ Email address: jkleiber@ou.edu | jkleiber8@gmail.com
 Date: 09/09/2018
 
 Description
-My approach to solve this problem is to first convert the UPPER and LOWER 
-program arguments to unsigned characters if applicable. My program optimizes 
+My approach to solve this problem is to first cast the UPPER and LOWER 
+program arguments to unsigned characters. My program optimizes 
 compute time by not allowing any computation if the upper character is after 
 the lower character in the character table. Then I proceed to read input from 
 stdin using the getchar() function until the input stream ended. I detect the 
@@ -30,7 +30,8 @@ do the 4 character right-flush output formatting.
 For help converting two ASCII chars to a single UTF-8 character, I referred to
 this link: https://www.utf8-chartable.de/unicode-utf8-table.pl?utf8=dec. I also 
 referred Trey Sullivent to this link when talking about high-level project 
-requirements.
+requirements. I did not end up using this as I found that casting worked 
+better. 
 
 For my Makefile, I used the things I learned from Dr. Fagg during his in-class 
 demonstration to set it up.
