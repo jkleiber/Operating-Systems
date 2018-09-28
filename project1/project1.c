@@ -274,18 +274,23 @@ int main (int argc, char ** argv)
     // Read command inputs until "quit" command or eof of redirected input
     while(!feof(stdin)) 
     {
-        //Write the prompt
-        fputs(prompt, stdout);
+        if(batch_input == FALSE)
+        {
+            //Write the prompt
+            fputs(prompt, stdout);
+        }
+
+        orig_input = fgets(buf, MAX_BUFFER, stdin);
 
     	//Read a line from stdin
-        if(fgets(buf, MAX_BUFFER, stdin))
+        if(orig_input)
         {
-            //Save the original input
-            orig_input = strdup(buf);
 
             //If a batch file is being read in, print the input
             if(batch_input == TRUE)
             {
+                //Write the prompt
+                fputs(prompt, stdout);
                 fprintf(stdout, "%s", orig_input);
                 fflush(stdout);
             }
