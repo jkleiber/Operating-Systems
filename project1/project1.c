@@ -35,15 +35,31 @@ void generalErrorHandler(char *arg)
     {
         fprintf(stderr, "wipe failed: %s\n", strerror(errno));
     }
-    //Filez error
+    //Filez error possibilities
     else if(!strcmp(arg, "filez"))
     {
-        fprintf(stderr, "filez failed: %s\n", strerror(errno));
+        switch(errno)
+        {
+            case 0:
+                fprintf(stderr, "filez unsuccessful on one or more files.\n");
+                break;
+            default:
+                fprintf(stderr, "filez failed: %s%d\n", strerror(errno), errno);
+                break;
+        }
     }
     //Ditto error
     else if(!strcmp(arg, "ditto"))
     {
-        fprintf(stderr, "ditto unsuccessful, system error: %s\n", strerror(errno));
+        switch(errno)
+        {
+            case 0:
+                fprintf(stderr, "ditto failed due to an incorrect input format or some general error.\n");
+                break;
+            default:
+                fprintf(stderr, "ditto unsuccessful, system error: %s%d\n", strerror(errno), errno);
+                break;
+        }
     }
     //Erase error
     else if(!strcmp(arg, "erase"))
@@ -58,7 +74,7 @@ void generalErrorHandler(char *arg)
     //Print general error if we don't know what command this is
     else
     {
-        fprintf(stderr, "%s", strerror(errno));
+        fprintf(stderr, "%s\n", strerror(errno));
     }
 }
 
@@ -123,7 +139,7 @@ void change_dir(char *dst)
 
 
 /*
- * file_pperations - runs the mimic and help commands by reading files byte
+ * file_operations - runs the mimic and help commands by reading files byte
  * by byte and either printing it to stdout or by copying the data to another
  * location on disk
  * 
@@ -274,23 +290,28 @@ int main (int argc, char ** argv)
     // Read command inputs until "quit" command or eof of redirected input
     while(!feof(stdin)) 
     {
+        //Write the prompt before input is read for user interaction
         if(batch_input == FALSE)
         {
-            //Write the prompt
             fputs(prompt, stdout);
         }
 
+        //Read the input to a buffer for tokenization and a string for use
         orig_input = fgets(buf, MAX_BUFFER, stdin);
 
     	//Read a line from stdin
         if(orig_input)
         {
-
-            //If a batch file is being read in, print the input
+            //Preserve the input before tokenization
+            orig_input = strdup(buf);
+            
+            //If a batch file is being read in, print the prompt and input after it is read in
             if(batch_input == TRUE)
             {
                 //Write the prompt
                 fputs(prompt, stdout);
+
+                //Write the input immediately
                 fprintf(stdout, "%s", orig_input);
                 fflush(stdout);
             }
