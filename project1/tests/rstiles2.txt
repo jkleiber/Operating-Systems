@@ -8,7 +8,7 @@ filez
 filez d1
 mkdir d2
 touch f3.txt
-morph f3.txt d2
+morph f3.txt d2/
 filez
 filez d2
 touch f4.txt

@@ -1,5 +1,12 @@
 #!/bin/bash
 
+touch ~/Operating-Systems/project1/output/awyatt_test_out.txt
+touch ~/Operating-Systems/project1/output/thanhd_test_out.txt
+touch ~/Operating-Systems/project1/output/gscott_test_out.txt
+touch ~/Operating-Systems/project1/output/esc_test_out.txt
+touch ~/Operating-Systems/project1/output/rstiles1_test_out.txt
+touch ~/Operating-Systems/project1/output/rstiles2_test_out.txt
+
 #Run tests and output them to the output folder
 #Test 1
 /projects/1/project1 ~/Operating-Systems/project1/tests/awyatt.txt > ~/Operating-Systems/project1/output/awyatt_test_out.txt

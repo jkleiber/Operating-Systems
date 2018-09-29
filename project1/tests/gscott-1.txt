@@ -1,6 +1,4 @@
-ditto      "This      is     a     test"
-environ
-help
+ditto "This is a test"
 touch file1 file2
 filez
 mimic file2 file3
@@ -8,9 +6,9 @@ erase file1
 mimic file1 file2
 filez
 mkdir dir1
-morph file3 dir1
+morph file3 dir1/
 touch myfile
-morph myfile dir2 //assuming dir2 doesn't exist
+morph myfile dir2/
 filez
 chdir dir1
 filez
