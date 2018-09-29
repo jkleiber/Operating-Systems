@@ -355,7 +355,7 @@ void filez(char *arg, char *input)
 
     //Allocate memory to the command variable and init
     command = (char*)malloc(7 * sizeof(char));
-    command[0] = '\0';                   
+    command[0] = '\0';
 
     //Form the command
     strcat(command, "ls -1 ");
@@ -370,7 +370,7 @@ void filez(char *arg, char *input)
     result = system(command);
 
     //If the system has errors, alert the user
-    if(!result)
+    if(result)
     {
         generalErrorHandler("filez");
     }
@@ -540,7 +540,15 @@ int run_command(char **args, char *orig_input)
     //filez [target] -> ls -1 [target]
     else if(!strcmp(args[0], "filez"))
     {
-        filez(args[1], orig_input);
+        if(args[1] == NULL)
+        {
+            filez(NULL, orig_input);
+        }
+        else
+        {
+            filez(args[1], orig_input);
+        }
+        
     }
     //environ -> env
     else if(!strcmp(args[0], "environ"))
