@@ -3,7 +3,6 @@
 ==>touch c
 ==>filez
 a
-auto_test.sh
 b
 c
 ==>filez a b
@@ -15,10 +14,9 @@ b
 ==>mkdir abc
 ==>cd abc
 ==>chdir
-/home/jkleiber8/empty
+/root
 ==>filez
 abc
-auto_test.sh
 b
 c
 ==>erase b
@@ -35,7 +33,6 @@ c
 ==>filez
 a
 abc
-auto_test.sh
 b
 d
 ==>touch p
@@ -45,7 +42,7 @@ d
 ==>morph q
 ==>chdir abc
 ==>chdir
-/home/jkleiber8/empty/abc
+/root/abc
 ==>chdir ..
 ==>chdir /
 ==>chdir

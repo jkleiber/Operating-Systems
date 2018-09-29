@@ -2,14 +2,12 @@
 This is a test
 ==>touch file1 file2
 ==>filez
-auto_test.sh
 file1
 file2
 ==>mimic file2 file3
 ==>erase file1
 ==>mimic file1 file2
 ==>filez
-auto_test.sh
 file2
 file3
 ==>mkdir dir1
@@ -17,7 +15,6 @@ file3
 ==>touch myfile
 ==>morph myfile dir2/
 ==>filez
-auto_test.sh
 dir1
 file2
 myfile
@@ -30,5 +27,4 @@ file3
 ==>erase dir1
 ==>erase myfile
 ==>filez
-auto_test.sh
 ==>esc

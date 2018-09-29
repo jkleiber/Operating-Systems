@@ -2,44 +2,60 @@
 ==>touch /projects/test2.txt
 ==>morph /projects/test2.txt 
 ==>filez
-auto_test.sh
 test.txt
 ==>morph test.txt newfile.txt 
 ==>filez
-auto_test.sh
 newfile.txt
 ==>morph test.txt random/
 ==>filez
-auto_test.sh
 newfile.txt
 ==>morph test.txt /dne
 ==>morph test.txt /projects/1/dne
 ==>filez
-auto_test.sh
 newfile.txt
 ==>morph test.txt .projects/1/dne/
 ==>filez 
-auto_test.sh
 newfile.txt
 ==>touch /projects/1/test3.txt
 ==>touch /projects/1/test4.txt
 ==>filez
-auto_test.sh
 newfile.txt
 ==>morph /projects/1/test3.txt projects/1/test4.txt
 ==>filez
-auto_test.sh
 newfile.txt
 ==>morph ../dne test1.txt
 ==>morph test.txt /dne/dne
 ==>morph test.txt /dne
 ==>filez 
-auto_test.sh
 newfile.txt
 ==>morph test.txt ../newfile2.txt
 ==>chdir .. 
 ==>chdir 
-/home/jkleiber8
+/
 ==>filez 
-Operating-Systems
-empty
+bin
+boot
+dev
+etc
+home
+initrd.img
+initrd.img.old
+lib
+lib64
+lost+found
+media
+mnt
+opt
+proc
+projects
+root
+run
+sbin
+snap
+srv
+sys
+tmp
+usr
+var
+vmlinuz
+vmlinuz.old
