@@ -33,9 +33,20 @@ find . ! -name 'auto_test.sh' -type f -exec rm -f {} +
 find . ! -name 'auto_test.sh' -type f -exec rm -f {} +
 
 #diff files
+echo "Test 1";
 diff -b -B ~/Operating-Systems/project1/output/awyatt_test_out.txt ~/Operating-Systems/project1/answers/awyatt.out
+
+echo "Test 2";
 diff -b -B ~/Operating-Systems/project1/output/thanhd_test_out.txt ~/Operating-Systems/project1/answers/thanhd.out
+
+echo "Test 3";
 diff -b -B ~/Operating-Systems/project1/output/gscott_test_out.txt ~/Operating-Systems/project1/answers/gscott-1.out
+
+echo "Test 4";
 diff -b -B ~/Operating-Systems/project1/output/esc_test_out.txt ~/Operating-Systems/project1/answers/esc.txt.out
+
+echo "Test 5";
 diff -b -B ~/Operating-Systems/project1/output/rstiles1_test_out.txt ~/Operating-Systems/project1/answers/rstiles1.out
+
+echo "Test 6";
 diff -b -B ~/Operating-Systems/project1/output/rstiles2_test_out.txt ~/Operating-Systems/project1/answers/rstiles2.out
