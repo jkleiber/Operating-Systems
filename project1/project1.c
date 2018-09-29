@@ -11,72 +11,136 @@
 
 //Mimic and Help commands
 #define MIMIC_OP 1
-#define HELP_OP 2
+#define HELP_OP  2
+
+//README path
+#define HELP_PATH "/projects/1/README.txt"
 
 /* Pre-compiler constants */
-#define MAX_ARGS 	    64         // max # args
-#define MAX_BUFFER 	    1024       // max line buffer
-#define SEPARATORS 	    " \t\n"    // token sparators
+#define MAX_ARGS 	64         // max # args
+#define MAX_BUFFER 	1024       // max line buffer
+#define SEPARATORS 	" \t\n"    // token sparators
 
 /* External variables */
 extern char **environ;         // environment array
 
+/* Declare the functions used */
+void change_dir(char *dst);
+void ditto(char *input);
+void file_operations(char *src, char *dst, int operation);
+void filez(char *arg, char *input);
+void generalErrorHandler(char *arg);
+void morph(char *src, char *dst);
+void printEnv();
+int run_command(char **args, char *orig_input);
+
 /*
- * generalErrorHandler - custom error handler when the special commands run
- * into system errors. Converts errno to a nicer message and prints that to 
- * stderr as well
+ * main - runs the majority of the program and passes more complicated stuff
+ * to external functions
  * 
- * @param *arg: the command that generated the error
+ * @param argc: number of program arguments
+ * @param **argv: program arguments
  */
-void generalErrorHandler(char *arg)
+int main (int argc, char ** argv)
 {
-    //Wipe error
-    if(!strcmp(arg, "wipe"))
+    /* Remove output buffering */
+    setbuf(stdout, NULL);
+
+    /* Declare and initialize constant */
+    const char *prompt = "==>" ;	// shell prompt
+    
+    /* Declare local variables */
+    char  **arg;            //working pointer thru args
+    char   *args[MAX_ARGS]; //pointers to arg strings
+    int     batch_input;    //is stdin a batch input file?
+    char    buf[MAX_BUFFER];//line buffer
+    char   *orig_input;     //the user's original input
+    
+    /* Initialize variables */
+    batch_input = FALSE;
+
+    //Check to see if there is a batch file being included as a program argument
+    if(argc >= 2)
     {
-        fprintf(stderr, "wipe failed: %s\n", strerror(errno));
+        stdin = fopen(argv[1], "r");
+        batch_input = TRUE;
     }
-    //Filez error possibilities
-    else if(!strcmp(arg, "filez"))
+    //If stdin is not a terminal, it is a batch file.
+    else if(!isatty(STDIN_FILENO))
     {
-        switch(errno)
+        batch_input = TRUE;
+    }
+    
+    //If a batch file is not existant or is not a file, print an error and exit
+    if(!stdin)
+    {
+        fprintf(stderr, "Error opening batch file: %s\n", strerror(errno));
+        return 0;
+    }
+
+    // Read command inputs until "quit" command or eof of redirected input
+    while(!feof(stdin)) 
+    {
+        //Write the prompt before input is read for user interaction
+        if(batch_input == FALSE)
         {
-            case 0:
-                fprintf(stderr, "filez unsuccessful on one or more files.\n");
-                break;
-            default:
-                fprintf(stderr, "filez failed: %s%d\n", strerror(errno), errno);
-                break;
+            fputs(prompt, stdout);
+        }
+
+        //Read the input to a buffer for tokenization and a string for use
+        orig_input = fgets(buf, MAX_BUFFER, stdin);
+
+    	//Read a line from stdin
+        if(orig_input)
+        {
+            //Preserve the input before tokenization
+            orig_input = strdup(buf);
+            
+            //If a batch file is being read in, print the prompt and input after it is read in
+            if(batch_input == TRUE)
+            {
+                //Write the prompt
+                fputs(prompt, stdout);
+
+                //Write the input immediately
+                fprintf(stdout, "%s", orig_input);
+                fflush(stdout);
+            }
+            
+            //Given the input as a string, tokenize each input argument
+            //Store each token in the args array by pointing to them with the arg pointers
+            //Note: the last entry in the list will be NULL
+            arg = args;
+
+            //Set up the string tokenization
+            *arg = strtok(buf,SEPARATORS);
+            arg++;
+
+            //Go through the current string until it ends
+            while((*arg = strtok(NULL,SEPARATORS)))
+            {
+                arg++;
+            }
+
+            //If there are any arguments, then run the command associated with it
+            if(args[0]) 
+    		{
+                //Continue along with the program unless the command runner returns false
+                if(!run_command(args, orig_input))
+                {
+                    //End the program
+                    break;
+                }
+            }
         }
     }
-    //Ditto error
-    else if(!strcmp(arg, "ditto"))
-    {
-        switch(errno)
-        {
-            case 0:
-                fprintf(stderr, "ditto failed due to an incorrect input format or some general error.\n");
-                break;
-            default:
-                fprintf(stderr, "ditto unsuccessful, system error: %s%d\n", strerror(errno), errno);
-                break;
-        }
-    }
-    //Erase error
-    else if(!strcmp(arg, "erase"))
-    {
-        fprintf(stderr, "unable to erase, error: %s\n", strerror(errno));
-    }
-    //Morph error
-    else if(!strcmp(arg, "morph"))
-    {
-        fprintf(stderr, "morph not successful: %s\n", strerror(errno));
-    }
-    //Print general error if we don't know what command this is
-    else
-    {
-        fprintf(stderr, "%s\n", strerror(errno));
-    }
+    
+    return 0; 
 }
+
+/***********************
+    HELPER FUNCTIONS
+***********************/
 
 /*
  * change_dir - changes the directory of the program when user calls chdir.
@@ -90,7 +154,7 @@ void change_dir(char *dst)
     int result;                //Result of any external operations
     char *work_dir; //Working directory placeholder variable
 
-    //Initialize variables
+    /* Initialize variables */
     result = 0;
 
     if(dst == NULL)
@@ -137,6 +201,44 @@ void change_dir(char *dst)
     }
 }
 
+/*
+ * ditto - outputs whatever the user wants to the shell.
+ * 
+ * @param *input: the full ditto command from user input
+ */
+void ditto(char *input)
+{
+    /* Declare local variables */
+    char   *command;    //command string for system calls.
+    int     result;     //error code tracker for operations
+
+    /* Initialize variables */
+    result = 0;
+
+    //Protect against cases where the string is short somehow
+    if(strlen(input) >= 7)
+    {
+        command = (char*)malloc((strlen(input) + 6)*sizeof(char));
+        command[0] = '\0';
+
+        //Form the echo command
+        strcat(command, "echo ");
+        strncpy(&input[0], &input[6], strlen(input));
+        strcat(command, input);
+
+        //Execute the echo command
+        result = system(command);
+
+        //Free dynamically allocated memory
+        free(command);
+        command = NULL;
+    }
+
+    if(result != 0)
+    {
+        generalErrorHandler("ditto");
+    }
+}
 
 /*
  * file_operations - runs the mimic and help commands by reading files byte
@@ -237,274 +339,291 @@ void file_operations(char *src, char *dst, int operation)
 }
 
 /*
- * main - runs the majority of the program and passes more complicated stuff
- * to external functions
+ * filez - lists all files in a directory or lists the files the user wants to display
  * 
- * @param argc: number of program arguments
- * @param **argv: program arguments
+ * @param *arg: the first target the user wants to find (if any)
+ * @param *input: the full line of input from the user
  */
-int main (int argc, char ** argv)
+void filez(char *arg, char *input)
 {
-    /* Remove output buffering */
-    setbuf(stdout, NULL);
-
-    /* Declare and initialize constants */
-    static char *help_path = "/projects/1/README.txt";
-    const char *prompt = "==>" ;	// shell prompt
-    
     /* Declare local variables */
-    char  **arg;            //working pointer thru args
-    char   *args[MAX_ARGS]; //pointers to arg strings
-    int     batch_input;    //is stdin a batch input file?
-    char    buf[MAX_BUFFER];//line buffer
-    char   *command;        //command output to the system
-    char  **env;            //environment
-    char   *name;           //file name
-    char   *orig_input;     //the user's original input
-    int     result;         //return value of command arg
+    char   *command;    //command string for system calls.
+    int     result;     //error code tracker for operations
+
+    /* Initialize variable */
+    result = 0;
+
+    //Allocate memory to the command variable and init
+    command = (char*)malloc(7 * sizeof(char));
+    command[0] = '\0';                   
+
+    //Form the command
+    strcat(command, "ls -1 ");
+    if(arg != NULL)
+    {
+        command = (char*)realloc(command, (7 + strlen(input)) * sizeof(char));
+        strncpy(&input[0], &input[6], strlen(input));
+        strcat(command, input);
+    }
     
+    //Show the files
+    result = system(command);
+
+    //If the system has errors, alert the user
+    if(!result)
+    {
+        generalErrorHandler("filez");
+    }
+
+    //Deallocate command variable
+    free(command);
+    command = NULL;
+}
+
+/*
+ * generalErrorHandler - custom error handler when the special commands run
+ * into system errors. Converts errno to a nicer message and prints that to 
+ * stderr as well
+ * 
+ * @param *arg: the command that generated the error
+ */
+void generalErrorHandler(char *arg)
+{
+    //Wipe error
+    if(!strcmp(arg, "wipe"))
+    {
+        fprintf(stderr, "wipe failed: %s\n", strerror(errno));
+    }
+    //Filez error possibilities
+    else if(!strcmp(arg, "filez"))
+    {
+        switch(errno)
+        {
+            case 0:
+                fprintf(stderr, "filez unsuccessful on one or more files.\n");
+                break;
+            default:
+                fprintf(stderr, "filez failed: %s%d\n", strerror(errno), errno);
+                break;
+        }
+    }
+    //Ditto error
+    else if(!strcmp(arg, "ditto"))
+    {
+        switch(errno)
+        {
+            case 0:
+                fprintf(stderr, "ditto failed due to an incorrect input format or some general error.\n");
+                break;
+            default:
+                fprintf(stderr, "ditto unsuccessful, system error: %s%d\n", strerror(errno), errno);
+                break;
+        }
+    }
+    //Erase error
+    else if(!strcmp(arg, "erase"))
+    {
+        fprintf(stderr, "unable to erase, error: %s\n", strerror(errno));
+    }
+    //Morph error
+    else if(!strcmp(arg, "morph"))
+    {
+        fprintf(stderr, "morph not successful: %s\n", strerror(errno));
+    }
+    //Print general error if we don't know what command this is
+    else
+    {
+        fprintf(stderr, "%s\n", strerror(errno));
+    }
+}
+
+/*
+ * morph - moves a file from one location to another
+ * 
+ * @param *src: path to the file to move
+ * @param *dst: path to move the file to
+ */
+void morph(char *src, char *dst)
+{
+    /* Declare local variables */
+    char   *command;    //command output to the system
+    char   *name;       //file name
+    int     result;     //result of commands interacting with OS
+
+    //If args[2] is a directory, append the current file's name on the end.
+    if(dst[strlen(dst) - 1] == '/')
+    {
+        //Get the file's non-path name
+        name = basename(src);
+
+        //Allocate command based on the file's name and dst path
+        command = (char*)malloc((strlen(dst) + strlen(name)) * sizeof(char));
+        command[0] = '\0';
+
+        //Add the directory path to command
+        strcat(command, dst);
+
+        //Add the file's name to the directory
+        strcat(command, name);
+
+        //Perform the move
+        result = rename(src, command);
+
+        //Free dynamic memory
+        free(command);
+        command = NULL;
+    }
+    else
+    {
+        //Duplicate the file string to command var
+        command = strdup(dst);
+
+        //Perform the move
+        result = rename(src, command);
+
+        //Free dynamic memory
+        free(command);
+        command = NULL;
+    }
+
+    //If there were errors, tell the user.
+    if(result != 0)
+    {
+        generalErrorHandler("morph");
+    }
+}
+
+/*
+ * printEnv - Prints the system environment variables
+ */
+void printEnv()
+{
+    /* Declare local variables */
+    char  **env;    //environment
+
+    //Retrieve the environment
+    env = environ;
+
+    //Print out each environment variable line by line
+    while(*env)
+    {
+        fprintf(stdout, "%s\n", *env);
+        env++;
+    }
+}
+
+/*
+ * run_command - takes a command in from the user and runs it
+ * 
+ * @param **args: list of args passed in by the user
+ * @param *orig_input: original program input
+ */
+int run_command(char **args, char *orig_input)
+{
+    /* Declare local variables */
+    int result; //return value of command arg
+
     /* Initialize variables */
-    result      = 0;
-    batch_input = FALSE;
-    env         = environ;
+    result = 0;
 
-    //Check to see if there is a batch file being included as a program argument
-    if(argc >= 2)
+    //esc -> quit program
+    if (!strcmp(args[0],"esc")) 
     {
-        stdin = fopen(argv[1], "r");
-        batch_input = TRUE;
+        //End the program
+        return FALSE;
     }
-    //If stdin is not a terminal, it is a batch file.
-    else if(!isatty(STDIN_FILENO))
-    {
-        batch_input = TRUE;
+    //wipe -> clear
+    else if (!strcmp(args[0],"wipe"))
+    { 
+        result = system("clear");
     }
-    
-    //If a batch file is not existant or is not a file, print an error and exit
-    if(!stdin)
+    //filez [target] -> ls -1 [target]
+    else if(!strcmp(args[0], "filez"))
     {
-        fprintf(stderr, "Error opening batch file: %s\n", strerror(errno));
-        return 0;
+        filez(args[1], orig_input);
     }
-
-    // Read command inputs until "quit" command or eof of redirected input
-    while(!feof(stdin)) 
+    //environ -> env
+    else if(!strcmp(args[0], "environ"))
     {
-        //Write the prompt before input is read for user interaction
-        if(batch_input == FALSE)
+        printEnv();
+    }
+    //ditto -> echo
+    else if(!strcmp(args[0], "ditto"))
+    {
+        //If there is something to echo, do it.
+        if(args[1] != NULL)
         {
-            fputs(prompt, stdout);
-        }
-
-        //Read the input to a buffer for tokenization and a string for use
-        orig_input = fgets(buf, MAX_BUFFER, stdin);
-
-    	//Read a line from stdin
-        if(orig_input)
-        {
-            //Preserve the input before tokenization
-            orig_input = strdup(buf);
-            
-            //If a batch file is being read in, print the prompt and input after it is read in
-            if(batch_input == TRUE)
-            {
-                //Write the prompt
-                fputs(prompt, stdout);
-
-                //Write the input immediately
-                fprintf(stdout, "%s", orig_input);
-                fflush(stdout);
-            }
-            
-            //Given the input as a string, tokenize each input argument
-            //Store each token in the args array by pointing to them with the arg pointers
-            //Note: the last entry in the list will be NULL
-            arg = args;
-
-            //Set up the string tokenization
-            *arg = strtok(buf,SEPARATORS);
-            arg++;
-
-            //Go through the current string until it ends
-            while((*arg = strtok(NULL,SEPARATORS)))
-            {
-                arg++;
-            }
-
-            //If there are any arguments, then check for commands
-            if(args[0]) 
-    		{
-                //esc -> quit program
-                if (!strcmp(args[0],"esc")) 
-                {
-                    break;
-                }
-                //wipe -> clear
-                else if (!strcmp(args[0],"wipe"))
-                { 
-                    result = system("clear");
-                }
-                //filez [target] -> ls -1 [target]
-                else if(!strcmp(args[0], "filez"))
-                {
-                    //Allocate memory to the command variable and init
-                    command = (char*)malloc(7 * sizeof(char));
-                    command[0] = '\0';                   
-
-                    //Form the command
-                    strcat(command, "ls -1 ");
-                    if(args[1] != NULL)
-                    {
-                        command = (char*)realloc(command, (7 + strlen(orig_input)) * sizeof(char));
-                        strncpy(&orig_input[0], &orig_input[6], strlen(orig_input));
-                        strcat(command, orig_input);
-                    }
-                    
-                    //Show the files
-                    result = system(command);
-
-                    //Deallocate command variable
-                    free(command);
-                    command = NULL;
-                }
-                //environ -> env
-                else if(!strcmp(args[0], "environ"))
-                {
-                    //Retrieve the environment
-                    env = environ;
-
-                    //Print out each environment variable line by line
-                    while(*env)
-                    {
-                        fprintf(stdout, "%s\n", *env);
-                        env++;
-                    }
-                }
-                //ditto -> echo
-                else if(!strcmp(args[0], "ditto"))
-                {
-                    //If there is something to echo, do it.
-                    if(args[1] != NULL)
-                    {
-                        command = (char*)malloc((strlen(orig_input) + 6)*sizeof(char));
-                        command[0] = '\0';
-
-                        //Form the echo command
-                        strcat(command, "echo ");
-                        strncpy(&orig_input[0], &orig_input[6], strlen(orig_input));
-                        strcat(command, orig_input);
-
-                        //Execute the echo command
-                        result = system(command);
-
-                        //Free dynamically allocated memory
-                        free(command);
-                        command = NULL;
-                    }
-                }
-                //help -> Print readme
-                else if(!strcmp(args[0], "help"))
-                {
-                    file_operations(help_path, NULL, HELP_OP);
-                }
-                //mimic [src] [dst] -> cp [src] [dst] (not using system())
-                else if(!strcmp(args[0], "mimic"))
-                {
-                    //Make sure that the source and destination are defined
-                    if(args[1] != NULL && args[2] != NULL)
-                    {
-                        file_operations(args[1], args[2], MIMIC_OP);
-                    }
-                    else
-                    {
-                        fprintf(stderr, "Input Error: use format mimic [src] [dst]");
-                    }
-                }
-                //erase [file] -> rm (not using system())
-                else if(!strcmp(args[0], "erase"))
-                {
-                    //If a file/directory is specified, remove it
-                    if(args[1] != NULL)
-                    {
-                        result = remove(args[1]);
-                    }
-                    else
-                    {
-                        fprintf(stderr, "Input Error: File target missing; use format erase [file].\n");
-                    }
-                }
-                //morph [src] [dst] -> mv [src] [dst] (not using system())
-                else if(!strcmp(args[0], "morph"))
-                {
-                    //Perform morph operation iff both args aren't null
-                    if(args[1] != NULL && args[2] != NULL)
-                    {
-                        //If args[2] is a directory, append the current file's name on the end.
-                        if(args[2][strlen(args[2]) - 1] == '/')
-                        {
-                            //Get the file's non-path name
-                            name = basename(args[1]);
-
-                            //Allocate command based on the file's name and dst path
-                            command = (char*)malloc((strlen(args[2]) + strlen(name)) * sizeof(char));
-                            command[0] = '\0';
-
-                            //Add the directory path to command
-                            strcat(command, args[2]);
-
-                            //Add the file's name to the directory
-                            strcat(command, name);
-
-                            //Perform the move
-                            result = rename(args[1], command);
-
-                            //Free dynamic memory
-                            free(command);
-                            command = NULL;
-                        }
-                        else
-                        {
-                            //Duplicate the file string to command var
-                            command = strdup(args[2]);
-
-                            //Perform the move
-                            result = rename(args[1], command);
-
-                            //Free dynamic memory
-                            free(command);
-                            command = NULL;
-                        }
-                    }
-                    else
-                    {
-                        fprintf(stderr, "Input Error: use format morph [src] [dst]\n");
-                    }
-                }
-                //cd, chdir [directory] -> change to the target directory
-                else if(!strcmp(args[0], "chdir"))
-                {
-                    change_dir(args[1]);
-                }
-                //Otherwise pass command onto OS
-                else
-                {
-                    //Execute the unrecognized command
-                    result = system(orig_input);
-                    
-                    //if the external program fails, let it output its own error message
-                    result = 0;
-                }
-
-                /* Error Handling */
-                //If there was an error, print a notification to stderr
-                if(result != 0)
-                {
-                    generalErrorHandler(args[0]);
-                    result = 0;
-                }
-            }
+            ditto(orig_input);
         }
     }
-    
-    return 0; 
+    //help -> Print readme
+    else if(!strcmp(args[0], "help"))
+    {
+        file_operations(HELP_PATH, NULL, HELP_OP);
+    }
+    //mimic [src] [dst] -> cp [src] [dst] (not using system())
+    else if(!strcmp(args[0], "mimic"))
+    {
+        //Make sure that the source and destination are defined
+        if(args[1] != NULL && args[2] != NULL)
+        {
+            file_operations(args[1], args[2], MIMIC_OP);
+        }
+        else
+        {
+            fprintf(stderr, "Input Error: use format mimic [src] [dst]");
+        }
+    }
+    //erase [file] -> rm (not using system())
+    else if(!strcmp(args[0], "erase"))
+    {
+        //If a file/directory is specified, remove it
+        if(args[1] != NULL)
+        {
+            result = remove(args[1]);
+        }
+        else
+        {
+            fprintf(stderr, "Input Error: File target missing; use format erase [file].\n");
+        }
+    }
+    //morph [src] [dst] -> mv [src] [dst] (not using system())
+    else if(!strcmp(args[0], "morph"))
+    {
+        //Perform morph operation iff both args aren't null
+        if(args[1] != NULL && args[2] != NULL)
+        {
+            //run morph
+            morph(args[1], args[2]);
+        }
+        else
+        {
+            fprintf(stderr, "Input Error: use format morph [src] [dst]\n");
+        }
+    }
+    //cd, chdir [directory] -> change to the target directory
+    else if(!strcmp(args[0], "chdir"))
+    {
+        change_dir(args[1]);
+    }
+    //Otherwise pass command onto OS
+    else
+    {
+        //Execute the unrecognized command
+        result = system(orig_input);
+        
+        //if the external program fails, let it output its own error message
+        result = 0;
+    }
+
+    /* Error Handling */
+    //If there was an error, print a notification to stderr
+    if(result != 0)
+    {
+        generalErrorHandler(args[0]);
+        result = 0;
+    }
+
+    //Program should continue
+    return TRUE;
 }
