@@ -403,7 +403,7 @@ void generalErrorHandler(char *arg)
                 fprintf(stderr, "filez unsuccessful on one or more files.\n");
                 break;
             default:
-                fprintf(stderr, "filez failed: %s%d\n", strerror(errno), errno);
+                fprintf(stderr, "filez failed: %s\n", strerror(errno));
                 break;
         }
     }
@@ -416,7 +416,7 @@ void generalErrorHandler(char *arg)
                 fprintf(stderr, "ditto failed due to an incorrect input format or some general error.\n");
                 break;
             default:
-                fprintf(stderr, "ditto unsuccessful, system error: %s%d\n", strerror(errno), errno);
+                fprintf(stderr, "ditto unsuccessful, system error: %s\n", strerror(errno));
                 break;
         }
     }
