@@ -450,6 +450,9 @@ void morph(char *src, char *dst)
     char   *name;       //file name
     int     result;     //result of commands interacting with OS
 
+    /* Initialize variables */
+    result = 0;
+
     //If args[2] is a directory, append the current file's name on the end.
     if(dst[strlen(dst) - 1] == '/')
     {
@@ -457,7 +460,7 @@ void morph(char *src, char *dst)
         name = basename(src);
 
         //Allocate command based on the file's name and dst path
-        command = (char*)malloc((strlen(dst) + strlen(name)) * sizeof(char));
+        command = (char*)malloc((strlen(dst) + strlen(name) + 1) * sizeof(char));
         command[0] = '\0';
 
         //Add the directory path to command
@@ -540,15 +543,7 @@ int run_command(char **args, char *orig_input)
     //filez [target] -> ls -1 [target]
     else if(!strcmp(args[0], "filez"))
     {
-        if(args[1] == NULL)
-        {
-            filez(NULL, orig_input);
-        }
-        else
-        {
-            filez(args[1], orig_input);
-        }
-        
+        filez(args[1], orig_input);
     }
     //environ -> env
     else if(!strcmp(args[0], "environ"))
