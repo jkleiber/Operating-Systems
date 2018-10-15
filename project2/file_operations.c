@@ -18,13 +18,7 @@ void change_dir(char *dst)
     if(dst == NULL)
     {
         //Print the working directory if it is found
-        result = system("pwd");
-
-        //Otherwise indicate an error occurred
-        if(result)
-        {
-            fprintf(stderr, "Failed to get current working directory.\n");
-        }
+        printCWD();
     }
     else
     {
@@ -65,40 +59,16 @@ void change_dir(char *dst)
  * @param *arg: the first target the user wants to find (if any)
  * @param *input: the full line of input from the user
  */
-void filez(char *arg, char *input)
+void filez(char **args, int num_tokens)
 {
     /* Declare local variables */
-    char   *command;    //command string for system calls.
-    int     result;     //error code tracker for operations
-
-    /* Initialize variable */
-    result = 0;
-
-    //Allocate memory to the command variable and init
-    command = (char*)malloc(7 * sizeof(char));
-    command[0] = '\0';
-
-    //Form the command
-    strcat(command, "ls -1 ");
-    if(arg != NULL)
-    {
-        command = (char*)realloc(command, (7 + strlen(input)) * sizeof(char));
-        strncpy(&input[0], &input[6], strlen(input));
-        strcat(command, input);
-    }
-    
-    //Show the files
-    result = system(command);
+    char *flags[1] = {"-1"};  //flag for the ls command
 
     //If the system has errors, alert the user
-    if(result)
+    if(general_command("ls", flags, 1, args, num_tokens))
     {
         generalErrorHandler("filez");
     }
-
-    //Deallocate command variable
-    free(command);
-    command = NULL;
 }
 
 /*
@@ -131,24 +101,27 @@ int get_type(const char *path)
 /*
  *
  */
-void mkdirz(char *path)
+void mkdirz(char **args, int num_tokens)
 {
     //Declare local variables
-    char   *dir;            //parent directory of the new directory
-    int     dir_type;       //type of file the base path is
-    char   *args_list[3];   //arguments to pass to fork & exec
+    char   *dir;        //parent directory of the new directory
+    int     dir_type;   //type of file the base path is
+    char   *full_path;  //original path to target
     
+    //Initialize variables
+    full_path = strdup(args[1]);
+
     //Get the parent directory of the new folder and its type
-    dir = dirname(path);
+    dir = dirname(full_path);
     dir_type = get_type(dir);
 
     //If the target directory will be valid, create the directory
     if(dir_type != REGULAR_FILE && dir_type != -1)
     {
-        args_list[0] = "mkdir";
-        args_list[1] = path;
-        args_list[2] = NULL;
-        fork_exec("mkdir", args_list);
+        if(general_command("mkdir", NULL, 0, args, num_tokens))
+        {
+            generalErrorHandler("mkdirz");
+        }
     }
     //If the target directory is a regular file, print an error
     else if(dir_type == REGULAR_FILE)
@@ -256,7 +229,12 @@ void morph_mimic(char *src, char *dst, int mode, int recursive)
 /*
  *
  */
-void rmdirz(char *path)
+void rmdirz(char **args, int num_tokens)
 {
-
+    //Run the rmdir command
+    if(general_command("rmdir", NULL, 0, args, num_tokens))
+    {
+        //If the command failed, print an error
+        generalErrorHandler("rmdirz");
+    }
 }

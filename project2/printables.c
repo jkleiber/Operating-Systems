@@ -8,36 +8,12 @@ static const char *prompt = "==>";	// shell prompt
  * 
  * @param *input: the full ditto command from user input
  */
-void ditto(char *input)
+void ditto(char **args, int num_tokens)
 {
-    /* Declare local variables */
-    char   *command;    //command string for system calls.
-    int     result;     //error code tracker for operations
-
-    /* Initialize variables */
-    result = 0;
-
-    //Protect against cases where the string is short somehow
-    if(strlen(input) >= 7)
+    //Run an echo command on the system to print the tokens
+    if(general_command("echo", NULL, 0, args, num_tokens))
     {
-        command = (char*)malloc((strlen(input) + 6)*sizeof(char));
-        command[0] = '\0';
-
-        //Form the echo command
-        strcat(command, "echo ");
-        strncpy(&input[0], &input[6], strlen(input));
-        strcat(command, input);
-
-        //Execute the echo command
-        result = system(command);
-
-        //Free dynamically allocated memory
-        free(command);
-        command = NULL;
-    }
-
-    if(result != 0)
-    {
+        //Handle any errors that may come up
         generalErrorHandler("ditto");
     }
 }
@@ -83,6 +59,35 @@ void help()
 }
 
 /*
+ *
+ */
+void printCWD()
+{
+    //Declare local variables
+    int     cwd_length; //length of the current working directory string
+    char   *cwd;        //current working directory string
+
+    //Find the current path size
+    cwd_length = pathconf(".", _PC_PATH_MAX);
+
+    //Allocate memory for the cwd string
+    cwd = (char*)malloc(cwd_length*sizeof(char));
+
+    //Get the current directory and print it to the console
+    if(getcwd(cwd, cwd_length))
+    {
+        fputs(cwd, stdout);
+    }
+    else
+    {
+        fprintf(stderr, "Failed to get current working directory.\n");
+    }
+
+    //free the dynamically allocated memory
+    free(cwd);
+}
+
+/*
  * printEnv - Prints the system environment variables
  */
 void printEnv()
@@ -101,30 +106,27 @@ void printEnv()
     }
 }
 
+
 /*
  *
  */
-void printPrompt()
+void printPrompt(int just_cwd)
 {
-    //Declare local variables
-    int     cwd_length; //length of the current working directory string
-    char   *cwd;        //current working directory string
-
-    //Find the current path size
-    cwd_length = pathconf(".", _PC_PATH_MAX);
-
-    //Allocate memory for the cwd string
-    cwd = (char*)malloc(cwd_length*sizeof(char));
-
-    //Get the current directory and print it to the console
-    if(getcwd(cwd, cwd_length))
-    {
-        fputs(cwd, stdout);
-    }
+    printCWD();
 
     //Print the prompt characters
     fputs(prompt, stdout);
+}
 
-    //free the dynamically allocated memory
-    free(cwd);
+/*
+ *
+ */
+void wipe()
+{
+    //Send the system a command to clear the screen
+    if(general_command("clear", NULL, 0, NULL, 1))
+    {
+        //Handle any errors that occur when clearing the screen
+        generalErrorHandler("wipe");
+    }
 }

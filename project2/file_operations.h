@@ -13,14 +13,15 @@
 /* Custom headers */
 #include "error_handler.h"
 #include "global_constants.h"
+#include "printables.h"
 #include "system_calls.h"
 
 /* Functions */
 void change_dir(char *dst);
-void filez(char *arg, char *input);
+void filez(char **args, int num_tokens);
 int get_type(const char *path);
-void mkdirz(char *path);
+void mkdirz(char **args, int num_tokens);
 void morph_mimic(char *src, char *dst, int mode, int recursive);
-void rmdirz(char *path);
+void rmdirz(char **args, int num_tokens);
 
 #endif

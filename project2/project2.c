@@ -10,7 +10,7 @@
 #include "printables.h"
 
 /* Declare the functions used */
-int run_command(char **args, char *orig_input);
+int run_command(char **args, char *orig_input, int num_tokens);
 
 /*
  * main - runs the majority of the program and passes more complicated stuff
@@ -29,10 +29,12 @@ int main (int argc, char ** argv)
     char   *args[MAX_ARGS]; //pointers to arg strings
     int     batch_input;    //is stdin a batch input file?
     char    buf[MAX_BUFFER];//line buffer
+    int     num_tokens;     //number of tokens in command line input
     char   *orig_input;     //the user's original input
     
     /* Initialize variables */
     batch_input = FALSE;
+    num_tokens  = 0;
 
     //Check to see if there is a batch file being included as a program argument
     if(argc >= 2)
@@ -68,6 +70,9 @@ int main (int argc, char ** argv)
     	//Read a line from stdin
         if(orig_input)
         {
+            //Reset the token counter
+            num_tokens = 0;
+
             //Preserve the input before tokenization
             orig_input = strdup(buf);
             
@@ -90,18 +95,20 @@ int main (int argc, char ** argv)
             //Set up the string tokenization
             *arg = strtok(buf,SEPARATORS);
             arg++;
+            num_tokens++;
 
             //Go through the current string until it ends
             while((*arg = strtok(NULL,SEPARATORS)))
             {
                 arg++;
+                num_tokens++;
             }
 
             //If there are any arguments, then run the command associated with it
             if(args[0]) 
     		{
                 //Continue along with the program unless the command runner returns false
-                if(!run_command(args, orig_input))
+                if(!run_command(args, orig_input, num_tokens))
                 {
                     //End the program
                     break;
@@ -121,9 +128,10 @@ int main (int argc, char ** argv)
  * run_command - takes a command in from the user and runs it
  * 
  * @param **args: list of args passed in by the user
- * @param *orig_input: original program input
+ * @param  *orig_input: original program input
+ * @param   num_tokens: number of tokens in the args array
  */
-int run_command(char **args, char *orig_input)
+int run_command(char **args, char *orig_input, int num_tokens)
 {
     /* Declare local variables */
     int result; //return value of command arg
@@ -142,7 +150,7 @@ int run_command(char **args, char *orig_input)
         //If there is something to echo, do it.
         if(args[1] != NULL)
         {
-            ditto(orig_input);
+            ditto(args, num_tokens);
         }
     }
     //environ -> env
@@ -157,6 +165,12 @@ int run_command(char **args, char *orig_input)
         if(args[1] != NULL)
         {
             result = remove(args[1]);
+
+            if(result != 0)
+            {
+                generalErrorHandler("erase");
+                result = 0;
+            }
         }
         else
         {
@@ -172,7 +186,7 @@ int run_command(char **args, char *orig_input)
     //filez [target] -> ls -1 [target]
     else if(!strcmp(args[0], "filez"))
     {
-        filez(args[1], orig_input);
+        filez(args, num_tokens);
     }
     //help -> Print readme
     else if(!strcmp(args[0], "help"))
@@ -209,7 +223,7 @@ int run_command(char **args, char *orig_input)
         //Only make a directory if a path is provided
         if(args[1] != NULL)
         {
-            mkdirz(args[1]);
+            mkdirz(args, num_tokens);
         }
         else
         {
@@ -245,7 +259,7 @@ int run_command(char **args, char *orig_input)
     {
         if(args[1] != NULL)
         {
-            rmdirz(args[1]);
+            rmdirz(args, num_tokens);
         }
         else
         {
@@ -255,25 +269,18 @@ int run_command(char **args, char *orig_input)
     //wipe -> clear
     else if (!strcmp(args[0],"wipe"))
     { 
-        result = system("clear");
+        wipe();
     }
     //Otherwise pass command onto OS
     else
     {
         //Execute the unrecognized command
-        result = system(orig_input);
-        
-        //if the external program fails, let it output its own error message
-        result = 0;
+        general_command(args[0], NULL, 0, args, num_tokens);
     }
 
     /* Error Handling */
     //If there was an error, print a notification to stderr
-    if(result != 0)
-    {
-        generalErrorHandler(args[0]);
-        result = 0;
-    }
+    
 
     //Program should continue
     return TRUE;

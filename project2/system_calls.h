@@ -13,6 +13,7 @@
 #include "global_constants.h"
 
 /* Functions */
-void fork_exec(char *command, char *arg_list[]);
+int fork_exec(char *command, char *arg_list[]);
+int general_command(char *command, char **flags, int num_flags, char **args, int num_tokens);
 
 #endif
