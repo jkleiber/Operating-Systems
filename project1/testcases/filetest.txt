@@ -1,0 +1,16 @@
+ditto Testing files
+mkdir cs3113test2
+chdir cs3113test2
+filez
+echo Hello, World. > myfile
+filez
+mimic myfile myotherfile
+filez
+echo Hello, again. >> myotherfile
+cat myotherfile
+cat myfile
+erase myfile
+filez
+chdir ..
+rm -rf cs3113test2
+esc

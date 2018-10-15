@@ -1,0 +1,2 @@
+rm -rf cs3113test
+esc
