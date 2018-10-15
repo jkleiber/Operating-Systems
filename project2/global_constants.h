@@ -22,4 +22,18 @@
 #define MAX_BUFFER 	1024       // max line buffer
 #define SEPARATORS 	" \t\n"    // token sparators
 
+/* File redirection */
+#define READ            0
+#define WRITE           1
+#define APPEND          2
+#define NUM_REDIRECTS   2
+#define APPEND_FLAG     4
+
+/* File redirection struct */
+typedef struct file_info
+{
+    FILE* file;
+    int type;
+} file_info;
+
 #endif

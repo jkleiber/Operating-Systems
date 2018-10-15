@@ -65,7 +65,7 @@ void filez(char **args, int num_tokens)
     char *flags[1] = {"-1"};  //flag for the ls command
 
     //If the system has errors, alert the user
-    if(general_command("ls", flags, 1, args, num_tokens))
+    if(general_command("ls", flags, 1, args, num_tokens, NULL))
     {
         generalErrorHandler("filez");
     }
@@ -118,7 +118,7 @@ void mkdirz(char **args, int num_tokens)
     //If the target directory will be valid, create the directory
     if(dir_type != REGULAR_FILE && dir_type != -1)
     {
-        if(general_command("mkdir", NULL, 0, args, num_tokens))
+        if(general_command("mkdir", NULL, 0, args, num_tokens, NULL))
         {
             generalErrorHandler("mkdirz");
         }
@@ -232,7 +232,7 @@ void morph_mimic(char *src, char *dst, int mode, int recursive)
 void rmdirz(char **args, int num_tokens)
 {
     //Run the rmdir command
-    if(general_command("rmdir", NULL, 0, args, num_tokens))
+    if(general_command("rmdir", NULL, 0, args, num_tokens, NULL))
     {
         //If the command failed, print an error
         generalErrorHandler("rmdirz");

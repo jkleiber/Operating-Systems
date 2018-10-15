@@ -1,0 +1,26 @@
+==>touch myfile
+==>ditto "Go into created folder, make a file list it and return"
+Go into created folder, make a file list it and return
+==>mkdir testfolder
+==>chdir testfolder
+==>mimic ../myfile newfile
+==>filez
+newfile
+==>erase newfile
+==>chdir ..
+==>erase testfolder
+==>erase myfile
+==>esc
+==>touch myfile
+==>ditto "Go into created folder, make a file list it and return"
+Go into created folder, make a file list it and return
+==>mkdir testfolder
+==>chdir testfolder
+==>mimic ../myfile newfile
+==>filez
+newfile
+==>erase newfile
+==>chdir ..
+==>erase testfolder
+==>erase myfile
+==>esc

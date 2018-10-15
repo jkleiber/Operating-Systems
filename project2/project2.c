@@ -134,7 +134,8 @@ int main (int argc, char ** argv)
 int run_command(char **args, char *orig_input, int num_tokens)
 {
     /* Declare local variables */
-    int result; //return value of command arg
+    file_info   files[2];   //files for redirection
+    int         result;     //return value of command arg
 
     /* Initialize variables */
     result = 0;
@@ -274,8 +275,15 @@ int run_command(char **args, char *orig_input, int num_tokens)
     //Otherwise pass command onto OS
     else
     {
-        //Execute the unrecognized command
-        general_command(args[0], NULL, 0, args, num_tokens);
+        //Redirect any I/O and find number of input tokens
+        result = file_redirection(args, num_tokens, READ | WRITE | APPEND_FLAG, files);
+        
+        //If the file redirection succeeds (or if there is none), run a command
+        if(result > 0)
+        {
+            //Execute the unrecognized command
+            general_command(args[0], NULL, 0, args, result, files);
+        }
     }
 
     /* Error Handling */

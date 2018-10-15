@@ -11,7 +11,7 @@ static const char *prompt = "==>";	// shell prompt
 void ditto(char **args, int num_tokens)
 {
     //Run an echo command on the system to print the tokens
-    if(general_command("echo", NULL, 0, args, num_tokens))
+    if(general_command("echo", NULL, 0, args, num_tokens, NULL))
     {
         //Handle any errors that may come up
         generalErrorHandler("ditto");
@@ -124,7 +124,7 @@ void printPrompt(int just_cwd)
 void wipe()
 {
     //Send the system a command to clear the screen
-    if(general_command("clear", NULL, 0, NULL, 1))
+    if(general_command("clear", NULL, 0, NULL, 1, NULL))
     {
         //Handle any errors that occur when clearing the screen
         generalErrorHandler("wipe");

@@ -1,11 +1,116 @@
 #include "system_calls.h"
 
+int file_redirection(char **args, int num_tokens, int mode, file_info *files)
+{
+    //Declare local variables
+    int i;          //iteration variable for args
+    int j;          //number of redirects
+    int max_tokens; //number of input tokens
+
+    //Initialize non-redirection token counter and redirection counter
+    j = 0;
+    max_tokens = num_tokens;
+
+    //Find any and all redirection tokens and pipe the output accordingly
+    for(i = 1; i < num_tokens; ++i)
+    {
+        //Write stdout to a file
+        if(!strcmp(args[i], ">") && ((mode >> WRITE) & 1))
+        {
+            //Prevent any more args from appearing after redirection chars
+            if(max_tokens > i)
+            {
+                max_tokens = i;
+            }
+
+            //if the file argument is provided...
+            if(args[i + 1] != NULL && i < (num_tokens - 1))
+            {
+                //open the file and pipe it to stdout
+                files[j].file = fopen(args[i + 1], "w");
+                files[j].type = WRITE;
+                ++j;
+            }
+            else
+            {
+                fprintf(stderr, "Input Error: no file provided for redirection. Use format cmd > file.txt\n");
+                return -1;
+            }
+        }
+        //Append stdout to a file
+        else if(!strcmp(args[i], ">>") && ((mode >> APPEND) & 1))
+        {
+            //Prevent any more args from appearing after redirection chars
+            if(max_tokens > i)
+            {
+                max_tokens = i;
+            }
+
+            //if the file argument is provided...
+            if(args[i + 1] != NULL && i < (num_tokens - 1))
+            {
+                //open the file and append stdout to it
+                files[j].file = fopen(args[i + 1], "a");
+                files[j].type = APPEND;
+                ++j;
+            }
+            else
+            {
+                fprintf(stderr, "Input Error: no file provided for redirection. Use format cmd >> file.txt\n");
+                return -1;
+            }
+        }
+        //Read file input into stdin
+        else if(!strcmp(args[i],"<") && ((mode >> READ) & 1))
+        {
+            //Prevent any more args from appearing after redirection chars
+            if(max_tokens > i)
+            {
+                max_tokens = i;
+            }
+
+            //if the file argument is provided...
+            if(args[i + 1] != NULL && i < (num_tokens - 1))
+            {
+                //and the read permissions are permitted
+                if(!access(args[i + 1], R_OK))
+                {
+                    //open the file and pipe it to stdin
+                    files[j].file = fopen(args[i + 1], "r");
+                    files[j].type = READ;
+                    ++j;
+                }
+                else
+                {
+                    fprintf(stderr, "Unable to access file for redirection: %s\n", strerror(errno));
+                }
+            }
+            else
+            {
+                fprintf(stderr, "Input Error: no file provided for redirection. Use format cmd < file.txt\n");
+                return -1;
+            }
+        }
+
+        //End redirection once the maximum number of redirections are passed in
+        if(j >= NUM_REDIRECTS)
+        {
+            break;
+        }
+    }
+
+    //If no errors were encountered, return the number of tokens before redirection
+    return max_tokens;
+}
+
 /*
  *
  */
-int fork_exec(char * command, char * arg_list[])
+int fork_exec(char * command, char * arg_list[], file_info *files)
 {
     //Declare local variables
+    int fd;     //file descriptor for redirects
+    int i;      //iteration variable
     int pid;    //process ID of child process
     int status; //status of child process
 
@@ -18,7 +123,45 @@ int fork_exec(char * command, char * arg_list[])
             break;
         //If this is the child process, execute a system command with exec()
         case 0:
+            //Only consider redirecting files if the files array isn't NULL
+            if(files)
+            {
+                //Redirect file descriptors as necessary
+                for(i = 0; i < NUM_REDIRECTS; ++i)
+                {
+                    //If the file exists
+                    if(files[i].file)
+                    {
+                        //get the file descriptor associated with the file
+                        fd = fileno(files[i].file);
+
+                        //Assign a file to stdin if it is a READ type
+                        if(files[i].type == READ)
+                        {
+                            fd = dup2(fd, STDIN_FILENO);
+                        }
+                        //Assign a file to stdout if it is a WRITE or APPEND type
+                        else if(files[i].type == WRITE || files[i].type == APPEND)
+                        {
+                            fd = dup2(fd, STDOUT_FILENO);
+                        }
+                    }
+                }
+            }
+
+            //Run the command
             execvp(command, arg_list);
+
+            if(files)
+            {
+                //Close all files used for redirection
+                for(i = 0; i < NUM_REDIRECTS; ++i)
+                {
+                    fclose(files[i].file);
+                    files[i].type = -1;
+                }
+            }
+
             exit(0);
         //Otherwise wait for the child process to exit before continuing
         default:
@@ -35,7 +178,7 @@ int fork_exec(char * command, char * arg_list[])
 /*
  *
  */
-int general_command(char *command, char **flags, int num_flags, char **args, int num_tokens)
+int general_command(char *command, char **flags, int num_flags, char **args, int num_tokens, file_info *files)
 {
     //Declare local variables
     char  **args_list;  //list of tokens to pass to fork + exec combo
@@ -64,7 +207,7 @@ int general_command(char *command, char **flags, int num_flags, char **args, int
     args_list[num_flags + num_tokens] = NULL;
 
     //Run the command
-    result = fork_exec(command, args_list);
+    result = fork_exec(command, args_list, files);
 
     //Free dynamically allocated memory
     for(i = 0; i < (num_flags + num_tokens + 1); ++i)

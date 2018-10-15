@@ -3,6 +3,7 @@
 
 /* Libraries needed */
 #include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,7 +14,8 @@
 #include "global_constants.h"
 
 /* Functions */
-int fork_exec(char *command, char *arg_list[]);
-int general_command(char *command, char **flags, int num_flags, char **args, int num_tokens);
+int file_redirection(char **args, int num_tokens, int mode, file_info *files);
+int fork_exec(char * command, char * arg_list[], file_info *files);
+int general_command(char *command, char **flags, int num_flags, char **args, int num_tokens, file_info *files);
 
 #endif
