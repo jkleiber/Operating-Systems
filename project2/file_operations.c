@@ -9,8 +9,8 @@
 void change_dir(char *dst)
 {
     /* Declare local variables */
-    int result;                //Result of any external operations
-    char *work_dir; //Working directory placeholder variable
+    int     result;   //Result of any external operations
+    char   *work_dir; //Working directory placeholder variable
 
     /* Initialize variables */
     result = 0;
@@ -64,10 +64,10 @@ void change_dir(char *dst)
 int copy_file(char *src, char *dst)
 {
     /* Declare local variables */
-    char    c;
-    FILE   *dst_file;
-    int     num_read;
-    FILE   *src_file;
+    char    c;          //character for copying data
+    FILE   *dst_file;   //destination file pointer
+    int     num_read;   //number of bytes read
+    FILE   *src_file;   //source file pointer
 
     //Open the source file
     src_file = fopen(src, "r");
@@ -120,13 +120,13 @@ int copy_file(char *src, char *dst)
 void dfs_copy(char *src, char *dst, char *mode)
 {
     /* Declare local variables */
-    char           *cur_path;
-    int             cur_path_len;
-    char           *dst_path;
-    struct dirent  *file_reader;
-    char           *flags[1];
-    int             result;
-    DIR            *src_dir;
+    char           *cur_path;       //current path variable
+    int             cur_path_len;   //length of the base of the current path
+    char           *dst_path;       //path to destination
+    struct dirent  *file_reader;    //dirent file reader to traverse directory
+    char           *flags[1];       //flags to pass to directory commands
+    int             result;         //result of syscalls/libc operations
+    DIR            *src_dir;        //path to a source file
     
     //Initialize variables
     cur_path = strdup(src);

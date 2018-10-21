@@ -30,12 +30,18 @@ void help()
     FILE   *readme;     //destination file pointer
     size_t  num_read;   //number of items read from file
 
+    //initialize variables
+    num_read = 0;
+
     //Open the README.txt file
     readme = fopen(HELP_PATH, "r");
 
     //Print the readme if it was able to be opened
     if(readme)
     {
+        //Read a character
+        num_read = fread(&data, sizeof(char), 1, readme);
+
         //Read the source file until EOF
         while(num_read > 0 && !feof(readme))
         {
@@ -50,8 +56,8 @@ void help()
         //Close the README
         fclose(readme);
 
+        //Print a line for the prompt
         fprintf(stdout, "\n");
-        
     }
     else
     {
@@ -113,6 +119,7 @@ void printEnv()
  */
 void printPrompt()
 {
+    //Print the current working directory
     printCWD();
 
     //Print the prompt characters

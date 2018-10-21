@@ -268,7 +268,8 @@ int run_command(char **args, int num_tokens)
     if(result)
     {
         generalErrorHandler(args[0]);
-
+    }
+    
     //Program should continue
     return TRUE;
 }
