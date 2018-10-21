@@ -451,8 +451,16 @@ void morph_mimic(char *src, char *dst, char* mode, int recursive)
             }
             //Otherwise the dst directory does not already exist
             //This means a new directory will be created for morph/mimic that does not use the src directory's name.
-
-
+            else
+            {
+                //Add a slash to the end of the path if needed
+                if(dst[strlen(dst) - 1] != '/')
+                {
+                    dst_path = (char*)realloc(dst_path, strlen(dst) + 2);
+                    strcat(dst_path, "/");
+                }
+            }
+            
             //Only do recursive dir -> dir copy/move if the recursive flag is set.
             if(recursive)
             {
