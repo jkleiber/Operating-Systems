@@ -1,0 +1,18 @@
+mkdirz 1
+mkdirz 1/2
+mkdirz 1/2/3
+mkdirz 1/4
+mkdirz 1/2/3/5
+mkdirz 1/4/6
+mkdirz 1/4/6/7
+touch 1/2/3/5/a.txt
+touch 1/2/3/b.txt
+touch 1/2/c.txt
+touch 1/d.txt
+touch 1/4/e.txt
+touch 1/4/6/f.txt
+touch 1/4/6/7/g.txt
+morph 1 ../yee
+morph 1 -r ../yeet
+morph -r 1 ../yeet
+filez ../

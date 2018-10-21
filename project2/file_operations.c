@@ -427,7 +427,7 @@ void morph_mimic(char *src, char *dst, char* mode, int recursive)
             //Duplicate the dst path into dst path
             dst_path = strdup(dst);
 
-            //If the directory exists, add the current directory's name to the path
+            //If the dst directory exists, add the current directory's name to the path
             if(!result)
             {
                 //Get current directory name
@@ -449,6 +449,9 @@ void morph_mimic(char *src, char *dst, char* mode, int recursive)
                 strcat(dst_path, name);
                 strcat(dst_path, "/");
             }
+            //Otherwise the dst directory does not already exist
+            //This means a new directory will be created for morph/mimic that does not use the src directory's name.
+
 
             //Only do recursive dir -> dir copy/move if the recursive flag is set.
             if(recursive)

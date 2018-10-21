@@ -159,15 +159,19 @@ int fork_exec(char * command, char * arg_list[], file_info *files)
                 {
                     fclose(files[i].file);
                     files[i].type = -1;
+                    files[i].file = NULL;
                 }
             }
 
-            exit(0);
+            //Exit with a success code
+            exit(EXIT_SUCCESS);
+
         //Otherwise wait for the child process to exit before continuing
         default:
+            //Wait until the child process has exited with some status
             waitpid(pid, &status, WUNTRACED);
 
-            //TODO: error handling
+            //Return the status of the child process
             return status;
     }
 

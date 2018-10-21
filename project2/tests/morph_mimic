@@ -11,3 +11,6 @@ filez yolo
 morph yolo ../test
 mimic -r yolo ../test
 filez ../test
+morph -r ../test ./
+filez test
+filez test/yolo
