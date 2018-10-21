@@ -15,5 +15,5 @@ clean:
 	$(CC) $(CFLAGS) $< -o $@
 
 #Build the program for project1
-project2: project2.o error_handler.o file_operations.o printables.o system_calls.o
-	$(CC) project2.o error_handler.o file_operations.o printables.o system_calls.o -o project2
+project2: project2.o error_handler.o file_operations.o input_handler.o printables.o system_calls.o
+	$(CC) project2.o error_handler.o file_operations.o input_handler.o printables.o system_calls.o -o project2

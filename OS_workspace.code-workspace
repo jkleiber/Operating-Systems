@@ -1,17 +1,21 @@
 {
 	"folders": [
 		{
-			"path": "project1"
+			"path": "midterm"
 		},
 		{
 			"path": "project0"
 		},
 		{
-			"path": "midterm"
+			"path": "project1"
 		},
 		{
 			"path": "project2"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"files.associations": {
+			"input_handler.h": "c"
+		}
+	}
 }

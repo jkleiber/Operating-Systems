@@ -7,10 +7,11 @@
 #include "error_handler.h"
 #include "file_operations.h"
 #include "global_constants.h"
+#include "input_handler.h"
 #include "printables.h"
 
 /* Declare the functions used */
-int run_command(char **args, char *orig_input, int num_tokens);
+int run_command(char **args, int num_tokens);
 
 /*
  * main - runs the majority of the program and passes more complicated stuff
@@ -25,12 +26,10 @@ int main (int argc, char ** argv)
     setbuf(stdout, NULL);
 
     /* Declare local variables */
-    char  **arg;            //working pointer thru args
     char   *args[MAX_ARGS]; //pointers to arg strings
     int     batch_input;    //is stdin a batch input file?
     char    buf[MAX_BUFFER];//line buffer
     int     num_tokens;     //number of tokens in command line input
-    char   *orig_input;     //the user's original input
     
     /* Initialize variables */
     batch_input = FALSE;
@@ -64,18 +63,9 @@ int main (int argc, char ** argv)
             printPrompt();
         }
 
-        //Read the input to a buffer for tokenization and a string for use
-        orig_input = fgets(buf, MAX_BUFFER, stdin);
-
     	//Read a line from stdin
-        if(orig_input)
-        {
-            //Reset the token counter
-            num_tokens = 0;
-
-            //Preserve the input before tokenization
-            orig_input = strdup(buf);
-            
+        if(fgets(buf, MAX_BUFFER, stdin))
+        {            
             //If a batch file is being read in, print the prompt and input after it is read in
             if(batch_input == TRUE)
             {
@@ -83,32 +73,18 @@ int main (int argc, char ** argv)
                 printPrompt();
 
                 //Write the input immediately
-                fprintf(stdout, "%s", orig_input);
+                fprintf(stdout, "%s", buf);
                 fflush(stdout);
             }
             
-            //Given the input as a string, tokenize each input argument
-            //Store each token in the args array by pointing to them with the arg pointers
-            //Note: the last entry in the list will be NULL
-            arg = args;
-
-            //Set up the string tokenization
-            *arg = strtok(buf,SEPARATORS);
-            arg++;
-            num_tokens++;
-
-            //Go through the current string until it ends
-            while((*arg = strtok(NULL,SEPARATORS)))
-            {
-                arg++;
-                num_tokens++;
-            }
+            //Parse the program input
+            num_tokens = parseInput(buf, args);
 
             //If there are any arguments, then run the command associated with it
             if(args[0]) 
     		{
                 //Continue along with the program unless the command runner returns false
-                if(!run_command(args, orig_input, num_tokens))
+                if(!run_command(args, num_tokens))
                 {
                     //End the program
                     break;
@@ -128,10 +104,9 @@ int main (int argc, char ** argv)
  * run_command - takes a command in from the user and runs it
  * 
  * @param **args: list of args passed in by the user
- * @param  *orig_input: original program input
  * @param   num_tokens: number of tokens in the args array
  */
-int run_command(char **args, char *orig_input, int num_tokens)
+int run_command(char **args, int num_tokens)
 {
     /* Declare local variables */
     file_info   files[2];   //files for redirection
@@ -202,7 +177,7 @@ int run_command(char **args, char *orig_input, int num_tokens)
         {
             if(!strcmp(args[1], "-r") && args[3] != NULL)
             {
-                morph_mimic(args[2], args[3], MIMIC_OP, TRUE);
+                morph_mimic(args[2], args[3], args[0], TRUE);
             }
             else if(!strcmp(args[1], "-r"))
             {
@@ -210,7 +185,7 @@ int run_command(char **args, char *orig_input, int num_tokens)
             }
             else
             {
-                morph_mimic(args[1], args[2], MIMIC_OP, FALSE);
+                morph_mimic(args[1], args[2], args[0], FALSE);
             }
         }
         else
@@ -239,7 +214,7 @@ int run_command(char **args, char *orig_input, int num_tokens)
         {
             if(!strcmp(args[1], "-r") && args[3] != NULL)
             {
-                morph_mimic(args[2], args[3], MORPH_OP, TRUE);
+                morph_mimic(args[2], args[3], args[0], TRUE);
             }
             else if(!strcmp(args[1], "-r"))
             {
@@ -247,7 +222,7 @@ int run_command(char **args, char *orig_input, int num_tokens)
             }
             else
             {
-                morph_mimic(args[1], args[2], MORPH_OP, FALSE);
+                morph_mimic(args[1], args[2], args[0], FALSE);
             }
         }
         else

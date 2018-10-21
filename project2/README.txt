@@ -14,5 +14,8 @@ https://linux.die.net/man/3/dirname
 To convert my file pointers to file descriptors, I found this explanation of
 fileno(): https://stackoverflow.com/questions/3167298/how-can-i-convert-a-file-pointer-file-fp-to-a-file-descriptor-int-fd
 
-//For some dup2() examples I looked at this:
+For some dup2() examples I looked at this:
 https://www.geeksforgeeks.org/dup-dup2-linux-system-call/
+
+I found this link useful when trying to figure out how to determine if
+a directory is empty: https://stackoverflow.com/questions/6383584/check-if-a-directory-is-empty-using-c-on-linux
