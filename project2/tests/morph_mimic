@@ -1,0 +1,13 @@
+mkdirz ../test
+mimic input_handler.c ../test
+mimic input_handler.h ../test/
+mimic global_constants.c /home/justin/projects/Operating-Systems/project2/test
+echo "yeeet" > yeet.txt
+cat printables.h > swiggity.txt
+mkdirz yolo
+morph yeet.txt yolo
+morph swiggity.txt yolo
+filez yolo
+morph yolo ../test
+mimic -r yolo ../test
+filez ../test

@@ -177,6 +177,8 @@ int fork_exec(char * command, char * arg_list[], file_info *files)
 
 /*
  *
+ * Note: if flags are all that are passed in (for custom reasons), num_tokens needs to be set to 1 for the last flag to be read.
+ * This is to reflect that the number of tokens should never be less than 1, as a command is a token
  */
 int general_command(char *command, char **flags, int num_flags, char **args, int num_tokens, file_info *files)
 {

@@ -20,6 +20,7 @@
 
 /* Functions */
 void change_dir(char *dst);
+int copy_file(char *src, char *dst);
 void dfs_copy(char *src, char *dst, char *mode);
 void filez(char **args, int num_tokens);
 int get_type(const char *path);

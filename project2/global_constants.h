@@ -2,6 +2,7 @@
 #define GLOBAL_CONSTS_H
 
 /* Macros for file types*/
+#define TYPE_ERROR  -1
 #define OTHER        0
 #define REGULAR_FILE 1
 #define DIRECTORY    2
@@ -29,8 +30,8 @@
 #define PIPE            3
 
 /* File redirection flags*/
-#define READ_FLAG       0
-#define WRITE_FLAG      1
+#define READ_FLAG       1
+#define WRITE_FLAG      2
 #define APPEND_FLAG     4
 #define PIPE_FLAG       8
 

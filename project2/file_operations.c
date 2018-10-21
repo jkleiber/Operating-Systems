@@ -53,57 +53,6 @@ void change_dir(char *dst)
     }
 }
 
-/*
- *
- */
-void dfs_copy(char *src, char *dst, char *mode)
-{
-    /* Declare local variables */
-    char           *cur_path;
-    int             cur_path_len;
-    char           *dst_path;
-    struct dirent  *file_reader;
-    DIR            *src_dir;
-    
-    //Initialize variables
-    cur_path = strdup(src);
-    cur_path_len = strlen(cur_path);
-
-    //Open the source directory
-    src_dir = opendir(src);
-
-    //Read through the directory
-    while((file_reader = readdir(src_dir)))
-    {
-        //Only process items that are not the . or the .. special directories
-        if(strcmp(file_reader->d_name, ".") && strcmp(file_reader->d_name, ".."))
-        {
-            //Reallocate memory and concatenate the new file name onto the current path
-            cur_path = (char*)realloc(cur_path, cur_path_len + strlen(file_reader->d_name) + 1);
-            strcat(cur_path, file_reader->d_name);
-
-            //If the listed item is a file, morph/mimic it correctly
-            if(get_type(cur_path) == REGULAR_FILE)
-            {
-
-            }
-            //If the listed item is a directory, recursively step into it
-            else
-            {
-                //Make a destination path
-                dst_path = strdup(dst);
-                dst_path = (char*)realloc(dst_path, strlen(dst) + strlen(file_reader->d_name) + 2);
-                strcat(dst_path, file_reader->d_name);
-                strcat(dst_path, "/");
-
-                //Make a directory on the other end
-                
-                //Step into the directory
-                dfs_copy(cur_path, dst_path, mode);
-            }
-        }
-    }
-}
 
 /*
  * 
@@ -111,9 +60,10 @@ void dfs_copy(char *src, char *dst, char *mode)
 int copy_file(char *src, char *dst)
 {
     /* Declare local variables */
-    char c;
-    FILE *dst_file;
-    FILE *src_file;
+    char    c;
+    FILE   *dst_file;
+    int     num_read;
+    FILE   *src_file;
 
     //Open the source file
     src_file = fopen(src, "r");
@@ -127,29 +77,158 @@ int copy_file(char *src, char *dst)
         //If the destination file opened fine, perform the copy
         if(dst_file)
         {
+            num_read = fread(&c, sizeof(char), 1, src_file);
+
             //Read a byte from source and write it to dst until the EOF is found
-            while(!feof(src_file))
+            while(num_read > 0 && !feof(src_file))
             {
-                //If the read works, then write to dst
-                if(!fread(&c, sizeof(char), 1, src_file))
-                {
-                    //If the write fails, return an error
-                    if(fwrite(&c, sizeof(char), 1, dst_file))
-                    {
-                        return -1;
-                    }
-                }
-                //If the read fails, return an error
-                else
+                //If the write fails, return an error
+                if(!fwrite(&c, sizeof(char), 1, dst_file))
                 {
                     return -1;
                 }
+                
+                //Read another byte of data
+                num_read = fread(&c, sizeof(char), 1, src_file);
             }
         }
+        else
+        {
+            return -200;
+        }
+    }
+    else
+    {
+        return -100;
     }
 
     //No errors, return 0
     return 0;
+}
+
+/*
+ *
+ */
+void dfs_copy(char *src, char *dst, char *mode)
+{
+    /* Declare local variables */
+    char           *cur_path;
+    int             cur_path_len;
+    char           *dst_path;
+    struct dirent  *file_reader;
+    char           *flags[1];
+    int             result;
+    DIR            *src_dir;
+    
+    //Initialize variables
+    cur_path = strdup(src);
+    cur_path_len = strlen(cur_path);
+
+    //Open the source directory
+    src_dir = opendir(src);
+
+    //Only parse a successfully opened directory
+    if(src_dir)
+    {
+        //Read through the directory
+        while((file_reader = readdir(src_dir)))
+        {
+            //Only process items that are not the . or the .. special directories
+            if(strcmp(file_reader->d_name, ".") && strcmp(file_reader->d_name, ".."))
+            {
+                //Reallocate memory and concatenate the new file name onto the current path
+                cur_path = (char*)realloc(cur_path, (cur_path_len + strlen(file_reader->d_name) + 1) * sizeof(char));
+                strcat(cur_path, file_reader->d_name);
+
+                //If the listed item is a file, morph/mimic it correctly
+                if(get_type(cur_path) == REGULAR_FILE)
+                {
+                    dst_path = strdup(dst);
+                    dst_path = (char*)realloc(dst_path, (strlen(dst) + strlen(file_reader->d_name) + 2) * sizeof(char));
+                    strcat(dst_path, file_reader->d_name);
+
+                    //If the file is to be morphed, rename it
+                    if(!strcmp(mode, "morph"))
+                    {
+                        result = rename(cur_path, dst_path);
+                    }
+                    //If the file is to be mimiced, copy it to the dst
+                    else
+                    {
+                        result = copy_file(cur_path, dst_path);
+                    }
+
+                    //If there were errors, alert the user
+                    if(result)
+                    {
+                        generalErrorHandler(mode);
+                    }
+
+                    //Free dynamic memory
+                    free(dst_path);
+                }
+                //If the listed item is a directory, recursively step into it
+                else if (get_type(cur_path) == DIRECTORY || get_type(cur_path) == OTHER)
+                {
+                    //Make a destination path
+                    dst_path = strdup(dst);
+                    dst_path = (char*)realloc(dst_path, (strlen(dst) + strlen(file_reader->d_name) + 2) * sizeof(char));
+                    strcat(dst_path, file_reader->d_name);
+                    strcat(dst_path, "/");
+
+                    //Update the current directory to have a slash at the end
+                    cur_path = (char*)realloc(cur_path, sizeof(char) * (cur_path_len + strlen(file_reader->d_name) + 2));
+                    strcat(cur_path, "/");
+
+                    //Make a directory on the other end
+                    flags[0] = strdup(dst_path);
+
+                    //Run the mkdir command. If there are errors, end the attempt to copy this part
+                    if(general_command("mkdir", flags, 1, NULL, 1, NULL))
+                    {
+                        fprintf(stderr, "Error creating directory for %s, aborting.\n", mode);
+                        
+                        //Free the dynamic memory early
+                        free(dst_path);
+                        free(flags[0]);
+                        
+                        break;
+                    }
+
+                    //Step into the directory
+                    dfs_copy(cur_path, dst_path, mode);
+
+                    //Delete the directory if the morph command is called
+                    if(!strcmp(mode, "morph"))
+                    {
+                        //free up the flags array for the directory to remove
+                        free(flags[0]);
+                        flags[0] = strdup(cur_path);
+
+                        //call the rmdir function and deal with any errors by displaying a message to the user
+                        if(general_command("rmdir", flags, 1, NULL, 1, NULL))
+                        {
+                            fprintf(stderr, "Morph error occured during removal of directory\n");
+                        }
+                    }
+
+                    //Free dynamic memory
+                    free(dst_path);
+                    free(flags[0]);
+                }
+
+                //Reset the current path for the next file
+                cur_path[cur_path_len] = '\0';
+                cur_path = (char*)realloc(cur_path, (cur_path_len + 1) * sizeof(char));
+            }
+        }
+
+        //Close the directory
+        closedir(src_dir);
+
+        //Free dynamic memory
+        free(cur_path);
+    }
 }
 
 /*
@@ -292,11 +371,12 @@ void mkdirz(char **args, int num_tokens)
 void morph_mimic(char *src, char *dst, char* mode, int recursive)
 {
     /* Declare local variables */
-    char       *flags[1];
+    char       *flags[1];   //variable for making a directory
     char       *dst_path;   //path to destination file/directory
     int         dst_type;   //type of item the dst is
     char       *name;       //file name
     int         result;     //result of commands interacting with OS
+    char       *src_path;   //path to source file/dir
     int         src_type;   //type of item the src is
 
     /* Initialize variables */
@@ -304,7 +384,7 @@ void morph_mimic(char *src, char *dst, char* mode, int recursive)
 
     //Confirm the source file/directory exists. If it does not, print an error and exit
     result = access(src, F_OK);
-    if(!result)
+    if(result)
     {
         fprintf(stderr, "Error: source file/directory %s does not exist\n", src);
         return;
@@ -338,7 +418,7 @@ void morph_mimic(char *src, char *dst, char* mode, int recursive)
             fprintf(stderr, "Error: cannot %s a directory to a file. Try using a destination that is a directory.\n", mode);
         }
         //Copy the src directory into the dst directory
-        else if(dst_type == DIRECTORY || dst_type == OTHER)
+        else
         {
             //Find the actual target path
             //Check to see if the directory exists
@@ -348,7 +428,7 @@ void morph_mimic(char *src, char *dst, char* mode, int recursive)
             dst_path = strdup(dst);
 
             //If the directory exists, add the current directory's name to the path
-            if(result)
+            if(!result)
             {
                 //Get current directory name
                 name = basename(src);
@@ -356,21 +436,63 @@ void morph_mimic(char *src, char *dst, char* mode, int recursive)
                 //If the dst path has an ending slash, allocate additional memory for the current directory's name only
                 if(dst[strlen(dst) - 1] == '/')
                 {
-                    dst_path = (char*)realloc(dst_path, strlen(dst) + strlen(name) + 1);
+                    dst_path = (char*)realloc(dst_path, strlen(dst) + strlen(name) + 2);
                 }
                 //Otherwise do the same, but account for the missing slash
                 else
                 {
-                    dst_path = (char*)realloc(dst_path, strlen(dst) + strlen(name) + 1);
+                    dst_path = (char*)realloc(dst_path, strlen(dst) + strlen(name) + 3);
                     strcat(dst_path, "/");
                 }
+
+                //Finally, append the src directory name to the dst path
+                strcat(dst_path, name);
+                strcat(dst_path, "/");
             }
 
             //Only do recursive dir -> dir copy/move if the recursive flag is set.
             if(recursive)
             {
-                //Perform a recursive copy using depth first search
-                dfs_copy(src, dst_path, mode);
+                //Duplicate the src string
+                src_path = strdup(src);
+
+                //Format the src path nicely (needs to have a slash at the end)
+                if(src[strlen(src) - 1] != '/')
+                {
+                    src_path = (char*)realloc(src_path, sizeof(char) * (strlen(src) + 2));
+                    strcat(src_path, "/");
+                }
+
+                //Make the directory in the new location
+                flags[0] = strdup(dst_path);
+
+                if(!general_command("mkdir", flags, 1, NULL, 1, NULL))
+                {
+                    //Perform a recursive copy using depth first search
+                    dfs_copy(src_path, dst_path, mode);
+
+                    //Now attempt to remove the original src if this is morph
+                    if(!strcmp(mode, "morph"))
+                    {
+                        //Clear and re-init flags
+                        free(flags[0]);
+                        flags[0] = strdup(src_path);
+
+                        //Remove the directory and handle the errors
+                        if(general_command("rmdir", flags, 1, NULL, 1, NULL))
+                        {
+                            fprintf(stderr, "morph error: cannot remove source directory.\n");
+                        }
+                    }
+                }
+                else
+                {
+                    fprintf(stderr, "Error: cannot create directory in destination\n");
+                }
+
+                //Free dynamic memory
+                free(flags[0]);
+                free(src_path);
             }
             //If the src directory is empty, copy/move it over
             else if(is_empty_dir(src))
@@ -378,23 +500,26 @@ void morph_mimic(char *src, char *dst, char* mode, int recursive)
                 //If this is morph, just rename the directory
                 if(!strcmp(mode, "morph"))
                 {
-                    rename(src, dst_path);
+                    result = rename(src, dst_path);
                 }
                 //Otherwise the directory should be copied over to the new path.
                 else
                 {
-                    flags[1] = strdup(dst_path);
-                    if(general_command("mkdir", flags, 1, NULL, 0, NULL))
+                    flags[0] = strdup(dst_path);
+                    if(general_command("mkdir", flags, 1, NULL, 1, NULL))
                     {
                         generalErrorHandler(mode);
                     }
+                    free(flags[0]);
                 }
             }
-        }
-        //If recursive is specified, create a new directory and copy/move the files
-        else
-        {
-            fprintf(stderr, "File mismatch error: Directory to directory %s needs recursive flag.\n", mode);
+            else
+            {
+                fprintf(stderr, "File mismatch error: %s needs recursive flag for non-empty directories.\n", mode);
+            }
+
+            //Free dynamic memory
+            free(dst_path);
         }
     }
     //If source is a file...
