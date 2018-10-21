@@ -1,5 +1,13 @@
 #include "system_calls.h"
 
+/*
+ * file_redirection - handles redirection characters and sets up file redirects
+ * 
+ * @param **args: tokenized command line input
+ * @param num_tokens: number of tokens of command line input.
+ * @param mode: allowed redirect operations
+ * @param *files: files array to add redirection to.
+ */
 int file_redirection(char **args, int num_tokens, int mode, file_info *files)
 {
     //Declare local variables
@@ -104,7 +112,12 @@ int file_redirection(char **args, int num_tokens, int mode, file_info *files)
 }
 
 /*
- *
+ * fork_exec - forks a child process and then executes a command
+ * 
+ * @param *command: command to execute
+ * @param *arg_list[]: arguments to pass to the command
+ * @param *files: files to redirect to
+ * @return: status of the process execution upon return
  */
 int fork_exec(char * command, char * arg_list[], file_info *files)
 {
@@ -180,7 +193,16 @@ int fork_exec(char * command, char * arg_list[], file_info *files)
 }
 
 /*
- *
+ * general_command - command wrapper for fork() and exec()
+ * 
+ * @param *command: the one word command that is entered first in the terminal
+ * @param **flags: any flags that are passed to the command.
+ * @param num_flags: number of flags in the flags array
+ * @param **args: any additional arguments to the command
+ * @param num_tokens: number of arguments including the command
+ * @param *files: list of files to redirect to
+ * @return: status of the fork and exec results
+ * 
  * Note: if flags are all that are passed in (for custom reasons), num_tokens needs to be set to 1 for the last flag to be read.
  * This is to reflect that the number of tokens should never be less than 1, as a command is a token
  */

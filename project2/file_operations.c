@@ -55,7 +55,11 @@ void change_dir(char *dst)
 
 
 /*
+ * copy_file - copies a file from the src to the dst
  * 
+ * @param *src: path to a file to copy
+ * @param *dst: path to the destination of the copy
+ * @return: 0 if success, -100 if the src can't be opened, -200 if the dst can't be opened
  */
 int copy_file(char *src, char *dst)
 {
@@ -107,7 +111,11 @@ int copy_file(char *src, char *dst)
 }
 
 /*
- *
+ * dfs_copy - copies a file tree recursively using depth first search.
+ * 
+ * @param *src: current source directory to copy
+ * @param *dst: destination to copy files to
+ * @param *mode: morph or mimic modifier
  */
 void dfs_copy(char *src, char *dst, char *mode)
 {
@@ -250,7 +258,10 @@ void filez(char **args, int num_tokens)
 }
 
 /*
- *
+ * get_type - returns the stat type of the item located at the path
+ * 
+ * @param *path: the location of the item
+ * @return: the type of file the item is, simplified into file, directory or other.
  */
 int get_type(const char *path) 
 {
@@ -277,7 +288,10 @@ int get_type(const char *path)
 }
 
 /*
- *
+ * is_empty_dir - given a path, determines if the directory is empty
+ * 
+ * @param *path: directory to check for emptiness
+ * @return: true if the directory is empty, false otherwise
  */
 int is_empty_dir(char *path)
 {
@@ -321,7 +335,10 @@ int is_empty_dir(char *path)
 }
 
 /*
- *
+ * mkdirz - make a directory
+ * 
+ * @param **args: user entered command line arguments
+ * @param num_tokens: number of command line arguments
  */
 void mkdirz(char **args, int num_tokens)
 {
@@ -599,7 +616,10 @@ void morph_mimic(char *src, char *dst, char* mode, int recursive)
 }
 
 /*
- *
+ * rmdirz - remove directory
+ * 
+ * @param **args: command line arguments
+ * @param num_tokens: number of command line arguments
  */
 void rmdirz(char **args, int num_tokens)
 {

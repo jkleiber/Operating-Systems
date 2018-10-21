@@ -259,13 +259,15 @@ int run_command(char **args, int num_tokens)
         if(result > 0)
         {
             //Execute the unrecognized command
-            general_command(args[0], NULL, 0, args, result, files);
+            result = general_command(args[0], NULL, 0, args, result, files);
         }
     }
 
     /* Error Handling */
     //If there was an error, print a notification to stderr
-    
+    if(result)
+    {
+        generalErrorHandler(args[0]);
 
     //Program should continue
     return TRUE;

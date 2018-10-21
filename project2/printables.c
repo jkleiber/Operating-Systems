@@ -6,7 +6,8 @@ static const char *prompt = "==>";	// shell prompt
 /*
  * ditto - outputs whatever the user wants to the shell.
  * 
- * @param *input: the full ditto command from user input
+ * @param **args: tokenized command line input
+ * @param num_tokens: number of command line tokens
  */
 void ditto(char **args, int num_tokens)
 {
@@ -59,7 +60,7 @@ void help()
 }
 
 /*
- *
+ * printCWD - prints the current working directory to the console
  */
 void printCWD()
 {
@@ -108,9 +109,9 @@ void printEnv()
 
 
 /*
- *
+ * printPrompt - prints the current working directory and prompt pointer to the console
  */
-void printPrompt(int just_cwd)
+void printPrompt()
 {
     printCWD();
 
@@ -119,7 +120,7 @@ void printPrompt(int just_cwd)
 }
 
 /*
- *
+ * wipe - clears the terminal display
  */
 void wipe()
 {
