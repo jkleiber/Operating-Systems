@@ -7,5 +7,5 @@ cp README.txt /projects/2/
 cp Makefile /projects/2/
 
 #change permissions
-chmod 777 /projects --recursive
-chgrp google-sudoers /projects --recursive
+#chmod 777 /projects --recursive
+#chgrp google-sudoers /projects --recursive

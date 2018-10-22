@@ -95,11 +95,17 @@ int copy_file(char *src, char *dst)
                 //Read another byte of data
                 num_read = fread(&c, sizeof(char), 1, src_file);
             }
+
+            //Close the dst file
+            fclose(dst_file);
         }
         else
         {
             return -200;
         }
+
+        //Close the src file
+        fclose(src_file);
     }
     else
     {

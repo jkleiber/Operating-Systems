@@ -161,36 +161,72 @@ int fork_exec(char * command, char * arg_list[], file_info *files)
                     }
                 }
             }
+            
             //Run the command
-            execvp(command, arg_list);
+            status = execvp(command, arg_list);
+
+            //Print errors with the call if they exist
+            if(status)
+            {
+                fprintf(stderr, "%s\n", strerror(errno));
+            }
 
             //Flush stdout
             fflush(stdout);
 
+            //Close any files that might be open on the child process
             if(files)
             {
                 //Close all files used for redirection
                 for(i = 0; i < NUM_REDIRECTS; ++i)
                 {
-                    fclose(files[i].file);
+                    if(files[i].file)
+                    {
+                        fclose(files[i].file);
+                    }
                     files[i].type = -1;
                     files[i].file = NULL;
                 }
             }
 
-            //Exit with a success code
-            exit(EXIT_SUCCESS);
+            if(!status)
+            {
+                //Exit with a success code
+                exit(EXIT_SUCCESS);
+            }
+            else
+            {
+                exit(status);
+            }
 
         //Otherwise wait for the child process to exit before continuing
         default:
             //Wait until the child process has exited with some status
             waitpid(pid, &status, WUNTRACED);
+
+            //Close any files that were opened for redirection
+            if(files)
+            {
+                //Close all files used for redirection
+                for(i = 0; i < NUM_REDIRECTS; ++i)
+                {
+                    //Only close files that are actually open
+                    if(files[i].file)
+                    {
+                        fclose(files[i].file);
+                    }
+                    files[i].type = -1;
+                    files[i].file = NULL;
+                }
+            }
+
             //Return the status of the child process
             return status;
     }
 
-    //Nothing bad happened, so return 0
-    return 0;
+    //The only way to get here is via a fork error.
+    //Return non-zero to indicate this error
+    return -1;
 }
 
 /*

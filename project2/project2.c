@@ -38,7 +38,7 @@ int main (int argc, char ** argv)
     //Check to see if there is a batch file being included as a program argument
     if(argc >= 2)
     {
-        stdin = fopen(argv[1], "r");
+        freopen(argv[1], "r", stdin);
         batch_input = TRUE;
     }
     //If stdin is not a terminal, it is a batch file.
@@ -260,9 +260,8 @@ int run_command(char **args, int num_tokens)
         {
             //Execute the unrecognized command
             result = general_command(args[0], NULL, 0, args, result, files);
-        }
+        }       
     }
-
     /* Error Handling */
     //If there was an error, print a notification to stderr
     if(result)
