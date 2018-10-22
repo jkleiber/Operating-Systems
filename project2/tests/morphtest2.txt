@@ -1,0 +1,16 @@
+ditto Testing morph2
+mkdir cs3113test5
+chdir cs3113test5
+filez
+echo Hello, World. > myfile
+filez myfile
+filez myotherfile
+morph myfile myotherfile
+filez
+echo Hello, again. >> myotherfile
+cat myotherfile
+filez myfile
+filez myotherfile
+chdir ..
+rm -rf cs3113test5
+esc

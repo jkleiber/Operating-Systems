@@ -254,7 +254,7 @@ int run_command(char **args, int num_tokens)
         files[0].file = NULL;
         files[1].file = NULL;
         result = file_redirection(args, num_tokens, READ_FLAG | WRITE_FLAG | APPEND_FLAG, files);
-        
+
         //If the file redirection succeeds (or if there is none), run a command
         if(result > 0)
         {

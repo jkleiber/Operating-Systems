@@ -1,0 +1,15 @@
+ditto Testing morph
+mkdir cs3113test4
+chdir cs3113test4
+filez
+echo Hello, World. > myfile
+filez
+morph myfile myotherfile
+filez
+echo Hello, again. >> myotherfile
+cat myotherfile
+erase myfile
+filez
+chdir ..
+rm -rf cs3113test4
+esc

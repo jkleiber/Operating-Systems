@@ -1,0 +1,59 @@
+/home/justin/projects/Operating-Systems/project2==>mkdir hello
+/home/justin/projects/Operating-Systems/project2==>chdir hello
+/home/justin/projects/Operating-Systems/project2/hello==>mkdir t1
+/home/justin/projects/Operating-Systems/project2/hello==>mkdir t2
+/home/justin/projects/Operating-Systems/project2/hello==>mkdir t3
+/home/justin/projects/Operating-Systems/project2/hello==>mkdir t4
+/home/justin/projects/Operating-Systems/project2/hello==>tree
+.
+├── t1
+├── t2
+├── t3
+└── t4
+
+4 directories, 0 files
+/home/justin/projects/Operating-Systems/project2/hello==>echo "hello" > t1/1.txt
+/home/justin/projects/Operating-Systems/project2/hello==>mkdir t2/t1
+/home/justin/projects/Operating-Systems/project2/hello==>mimic t1/1.txt t2/t1
+/home/justin/projects/Operating-Systems/project2/hello==>tree
+.
+├── t1
+│   └── 1.txt
+├── t2
+│   └── t1
+│       └── 1.txt
+├── t3
+└── t4
+
+5 directories, 2 files
+/home/justin/projects/Operating-Systems/project2/hello==>mkdir t4/t1
+/home/justin/projects/Operating-Systems/project2/hello==>mimic t1/1.txt t4/t1/
+/home/justin/projects/Operating-Systems/project2/hello==>tree
+.
+├── t1
+│   └── 1.txt
+├── t2
+│   └── t1
+│       └── 1.txt
+├── t3
+└── t4
+    └── t1
+        └── 1.txt
+
+6 directories, 3 files
+/home/justin/projects/Operating-Systems/project2/hello==>morph -r t4/t1 t3
+/home/justin/projects/Operating-Systems/project2/hello==>tree
+.
+├── t1
+│   └── 1.txt
+├── t2
+│   └── t1
+│       └── 1.txt
+├── t3
+│   └── t1
+│       └── 1.txt
+└── t4
+
+6 directories, 3 files
+/home/justin/projects/Operating-Systems/project2/hello==>cat t3/t1/1.txt
+/home/justin/projects/Operating-Systems/project2/hello==>esc

@@ -1,0 +1,16 @@
+mkdir cs3113test3
+chdir cs3113test3
+touch f1.txt f2.txt
+mkdir d1 d2
+mkdir d2/d3
+filez
+mimic f1.txt f3.txt
+filez
+mimic f2.txt d2/d3/f2.txt
+filez d2/d3/
+mimic f1.txt d1/f7.txt
+filez d1/
+mkdir d4 d5
+chdir ..
+rm -rf cs3113test3
+esc

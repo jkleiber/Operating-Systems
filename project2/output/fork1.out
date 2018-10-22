@@ -1,0 +1,13 @@
+/home/justin/projects/Operating-Systems/project2==>mkdirz toexecute
+/home/justin/projects/Operating-Systems/project2==>echo echo $$ > toexecute/ppid
+/home/justin/projects/Operating-Systems/project2==>chmod +x toexecute/ppid
+/home/justin/projects/Operating-Systems/project2==>toexecute/ppid > toexecute/pid1
+/home/justin/projects/Operating-Systems/project2==>toexecute/ppid > toexecute/pid2
+/home/justin/projects/Operating-Systems/project2==>cat toexecute/pid1
+/home/justin/projects/Operating-Systems/project2==>cat toexecute/pid2
+/home/justin/projects/Operating-Systems/project2==>diff -q toexecute/pid1 toexecute/pid2
+/home/justin/projects/Operating-Systems/project2==>erase toexecute/ppid
+/home/justin/projects/Operating-Systems/project2==>erase toexecute/pid1
+/home/justin/projects/Operating-Systems/project2==>erase toexecute/pid2
+/home/justin/projects/Operating-Systems/project2==>rmdirz toexecute
+/home/justin/projects/Operating-Systems/project2==>esc

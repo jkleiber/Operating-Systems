@@ -1,0 +1,11 @@
+touch myfile
+ditto "Go into created folder, make a file list it and return"
+mkdir testfolder
+chdir testfolder
+mimic ../myfile newfile
+filez
+erase newfile
+chdir ..
+erase testfolder
+erase myfile
+esc

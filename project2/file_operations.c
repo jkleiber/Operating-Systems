@@ -274,6 +274,7 @@ int get_type(const char *path)
         return -1;
     }
 
+    //Check to see which type of file it is
     if(S_ISREG(statbuf.st_mode))
     {
         return REGULAR_FILE;
@@ -553,6 +554,9 @@ void morph_mimic(char *src, char *dst, char* mode, int recursive)
     //If source is a file...
     else
     {
+        //Find out if dst exists
+        result = access(dst, F_OK);
+
         //If the destination is a file, perform a straight copy
         if(dst_type == REGULAR_FILE)
         {
@@ -569,7 +573,7 @@ void morph_mimic(char *src, char *dst, char* mode, int recursive)
         }
         //If the destination is a directory, we need to create the file first
         //and then perform a normal copy
-        else
+        else if(!result)
         {
             //Get the source file's name (removing rest of path)
             name = basename(src);
@@ -606,12 +610,34 @@ void morph_mimic(char *src, char *dst, char* mode, int recursive)
             //Free dynamically allocated memory
             free(dst_path);
         }
+        //The dst does not exist, so try to morph/mimic to a file if possible
+        else if(result)
+        {
+            //If the dst is explicitly a directory, throw an error
+            if(dst[strlen(dst) - 1] == '/')
+            {
+                fprintf(stderr, "Error: cannot %s a file to a directory.\n", mode);
+            }
+            else
+            {
+                //If the command is mimic, copy the src file to dst
+                if(!strcmp(mode, "mimic"))
+                {
+                    result = copy_file(src, dst);
+                }
+                //If the command is morph, move the src file to dst
+                else
+                {
+                    result = rename(src, dst);
+                }
+            }
+        }
     }
 
     //If there were errors, tell the user.
     if(result != 0)
     {
-        generalErrorHandler("morph");
+        generalErrorHandler(mode);
     }
 }
 

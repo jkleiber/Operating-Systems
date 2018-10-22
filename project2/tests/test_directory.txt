@@ -1,0 +1,10 @@
+ditto Testing directory
+mkdir cs3113test
+chdir cs3113test
+filez
+mkdir dir
+filez
+erase dir
+chdir ..
+rm -rf cs3113test
+esc
