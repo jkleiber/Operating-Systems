@@ -477,6 +477,9 @@ void morph_mimic(char *src, char *dst, char* mode, int recursive)
             //This means a new directory will be created for morph/mimic that does not use the src directory's name.
             else
             {
+                //Reset result flags
+                result = 0;
+                
                 //Add a slash to the end of the path if needed
                 if(dst[strlen(dst) - 1] != '/')
                 {
@@ -626,6 +629,9 @@ void morph_mimic(char *src, char *dst, char* mode, int recursive)
             }
             else
             {
+                //Reset result flags
+                result = 0;
+
                 //If the command is mimic, copy the src file to dst
                 if(!strcmp(mode, "mimic"))
                 {
