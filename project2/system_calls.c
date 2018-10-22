@@ -161,7 +161,6 @@ int fork_exec(char * command, char * arg_list[], file_info *files)
                     }
                 }
             }
-fprintf(stderr, "%s\n", command);
             //Run the command
             execvp(command, arg_list);
 
@@ -186,7 +185,6 @@ fprintf(stderr, "%s\n", command);
         default:
             //Wait until the child process has exited with some status
             waitpid(pid, &status, WUNTRACED);
-fprintf(stderr, "status: %d\n", status);
             //Return the status of the child process
             return status;
     }
@@ -232,7 +230,6 @@ int general_command(char *command, char **flags, int num_flags, char **args, int
     for(i = 1; i < num_tokens; ++i)
     {
         args_list[i + num_flags] = strdup(args[i]);
-    fprintf(stderr, "%s\n", args_list[i+num_flags]);
     }
 
     //NULL terminate the command
