@@ -1,0 +1,147 @@
+0000000   /   p   r   o   j   e   c   t   s   /   2   =   =   >   m   k
+           702f    6f72    656a    7463    2f73    3d32    3e3d    6b6d
+0000020   d   i   r  sp   h   e   l   l   o  nl   /   p   r   o   j   e
+           6964    2072    6568    6c6c    0a6f    702f    6f72    656a
+0000040   c   t   s   /   2   =   =   >   c   h   d   i   r  sp   h   e
+           7463    2f73    3d32    3e3d    6863    6964    2072    6568
+0000060   l   l   o  nl   /   p   r   o   j   e   c   t   s   /   2   /
+           6c6c    0a6f    702f    6f72    656a    7463    2f73    2f32
+0000100   h   e   l   l   o   =   =   >   m   k   d   i   r  sp   t   1
+           6568    6c6c    3d6f    3e3d    6b6d    6964    2072    3174
+0000120  nl   /   p   r   o   j   e   c   t   s   /   2   /   h   e   l
+           2f0a    7270    6a6f    6365    7374    322f    682f    6c65
+0000140   l   o   =   =   >   m   k   d   i   r  sp   t   2  nl   /   p
+           6f6c    3d3d    6d3e    646b    7269    7420    0a32    702f
+0000160   r   o   j   e   c   t   s   /   2   /   h   e   l   l   o   =
+           6f72    656a    7463    2f73    2f32    6568    6c6c    3d6f
+0000200   =   >   m   k   d   i   r  sp   t   3  nl   /   p   r   o   j
+           3e3d    6b6d    6964    2072    3374    2f0a    7270    6a6f
+0000220   e   c   t   s   /   2   /   h   e   l   l   o   =   =   >   m
+           6365    7374    322f    682f    6c65    6f6c    3d3d    6d3e
+0000240   k   d   i   r  sp   t   4  nl   /   p   r   o   j   e   c   t
+           646b    7269    7420    0a34    702f    6f72    656a    7463
+0000260   s   /   2   /   h   e   l   l   o   =   =   >   t   r   e   e
+           2f73    2f32    6568    6c6c    3d6f    3e3d    7274    6565
+0000300  nl   .  nl   b dc4  fs   b dc4 nul   b dc4 nul  sp   t   1  nl
+           2e0a    e20a    9c94    94e2    e280    8094    7420    0a31
+0000320   b dc4  fs   b dc4 nul   b dc4 nul  sp   t   2  nl   b dc4  fs
+           94e2    e29c    8094    94e2    2080    3274    e20a    9c94
+0000340   b dc4 nul   b dc4 nul  sp   t   3  nl   b dc4 dc4   b dc4 nul
+           94e2    e280    8094    7420    0a33    94e2    e294    8094
+0000360   b dc4 nul  sp   t   4  nl  nl   4  sp   d   i   r   e   c   t
+           94e2    2080    3474    0a0a    2034    6964    6572    7463
+0000400   o   r   i   e   s   ,  sp   0  sp   f   i   l   e   s  nl   /
+           726f    6569    2c73    3020    6620    6c69    7365    2f0a
+0000420   p   r   o   j   e   c   t   s   /   2   /   h   e   l   l   o
+           7270    6a6f    6365    7374    322f    682f    6c65    6f6c
+0000440   =   =   >   e   c   h   o  sp   "   h   e   l   l   o   "  sp
+           3d3d    653e    6863    206f    6822    6c65    6f6c    2022
+0000460   >  sp   t   1   /   1   .   t   x   t  nl   /   p   r   o   j
+           203e    3174    312f    742e    7478    2f0a    7270    6a6f
+0000500   e   c   t   s   /   2   /   h   e   l   l   o   =   =   >   m
+           6365    7374    322f    682f    6c65    6f6c    3d3d    6d3e
+0000520   k   d   i   r  sp   t   2   /   t   1  nl   /   p   r   o   j
+           646b    7269    7420    2f32    3174    2f0a    7270    6a6f
+0000540   e   c   t   s   /   2   /   h   e   l   l   o   =   =   >   m
+           6365    7374    322f    682f    6c65    6f6c    3d3d    6d3e
+0000560   i   m   i   c  sp   t   1   /   1   .   t   x   t  sp   t   2
+           6d69    6369    7420    2f31    2e31    7874    2074    3274
+0000600   /   t   1  nl   /   p   r   o   j   e   c   t   s   /   2   /
+           742f    0a31    702f    6f72    656a    7463    2f73    2f32
+0000620   h   e   l   l   o   =   =   >   t   r   e   e  nl   .  nl   b
+           6568    6c6c    3d6f    3e3d    7274    6565    2e0a    e20a
+0000640 dc4  fs   b dc4 nul   b dc4 nul  sp   t   1  nl   b dc4 stx  sp
+           9c94    94e2    e280    8094    7420    0a31    94e2    2082
+0000660  sp  sp   b dc4 dc4   b dc4 nul   b dc4 nul  sp   1   .   t   x
+           2020    94e2    e294    8094    94e2    2080    2e31    7874
+0000700   t  nl   b dc4  fs   b dc4 nul   b dc4 nul  sp   t   2  nl   b
+           0a74    94e2    e29c    8094    94e2    2080    3274    e20a
+0000720 dc4 stx  sp  sp  sp   b dc4 dc4   b dc4 nul   b dc4 nul  sp   t
+           8294    2020    e220    9494    94e2    e280    8094    7420
+0000740   1  nl   b dc4 stx  sp  sp  sp  sp  sp  sp  sp   b dc4 dc4   b
+           0a31    94e2    2082    2020    2020    2020    94e2    e294
+0000760 dc4 nul   b dc4 nul  sp   1   .   t   x   t  nl   b dc4  fs   b
+           8094    94e2    2080    2e31    7874    0a74    94e2    e29c
+0001000 dc4 nul   b dc4 nul  sp   t   3  nl   b dc4 dc4   b dc4 nul   b
+           8094    94e2    2080    3374    e20a    9494    94e2    e280
+0001020 dc4 nul  sp   t   4  nl  nl   5  sp   d   i   r   e   c   t   o
+           8094    7420    0a34    350a    6420    7269    6365    6f74
+0001040   r   i   e   s   ,  sp   2  sp   f   i   l   e   s  nl   /   p
+           6972    7365    202c    2032    6966    656c    0a73    702f
+0001060   r   o   j   e   c   t   s   /   2   /   h   e   l   l   o   =
+           6f72    656a    7463    2f73    2f32    6568    6c6c    3d6f
+0001100   =   >   m   k   d   i   r  sp   t   4   /   t   1  nl   /   p
+           3e3d    6b6d    6964    2072    3474    742f    0a31    702f
+0001120   r   o   j   e   c   t   s   /   2   /   h   e   l   l   o   =
+           6f72    656a    7463    2f73    2f32    6568    6c6c    3d6f
+0001140   =   >   m   i   m   i   c  sp   t   1   /   1   .   t   x   t
+           3e3d    696d    696d    2063    3174    312f    742e    7478
+0001160  sp   t   4   /   t   1   /  nl   /   p   r   o   j   e   c   t
+           7420    2f34    3174    0a2f    702f    6f72    656a    7463
+0001200   s   /   2   /   h   e   l   l   o   =   =   >   t   r   e   e
+           2f73    2f32    6568    6c6c    3d6f    3e3d    7274    6565
+0001220  nl   .  nl   b dc4  fs   b dc4 nul   b dc4 nul  sp   t   1  nl
+           2e0a    e20a    9c94    94e2    e280    8094    7420    0a31
+0001240   b dc4 stx  sp  sp  sp   b dc4 dc4   b dc4 nul   b dc4 nul  sp
+           94e2    2082    2020    94e2    e294    8094    94e2    2080
+0001260   1   .   t   x   t  nl   b dc4  fs   b dc4 nul   b dc4 nul  sp
+           2e31    7874    0a74    94e2    e29c    8094    94e2    2080
+0001300   t   2  nl   b dc4 stx  sp  sp  sp   b dc4 dc4   b dc4 nul   b
+           3274    e20a    8294    2020    e220    9494    94e2    e280
+0001320 dc4 nul  sp   t   1  nl   b dc4 stx  sp  sp  sp  sp  sp  sp  sp
+           8094    7420    0a31    94e2    2082    2020    2020    2020
+0001340   b dc4 dc4   b dc4 nul   b dc4 nul  sp   1   .   t   x   t  nl
+           94e2    e294    8094    94e2    2080    2e31    7874    0a74
+0001360   b dc4  fs   b dc4 nul   b dc4 nul  sp   t   3  nl   b dc4 dc4
+           94e2    e29c    8094    94e2    2080    3374    e20a    9494
+0001400   b dc4 nul   b dc4 nul  sp   t   4  nl  sp  sp  sp  sp   b dc4
+           94e2    e280    8094    7420    0a34    2020    2020    94e2
+0001420 dc4   b dc4 nul   b dc4 nul  sp   t   1  nl  sp  sp  sp  sp  sp
+           e294    8094    94e2    2080    3174    200a    2020    2020
+0001440  sp  sp  sp   b dc4 dc4   b dc4 nul   b dc4 nul  sp   1   .   t
+           2020    e220    9494    94e2    e280    8094    3120    742e
+0001460   x   t  nl  nl   6  sp   d   i   r   e   c   t   o   r   i   e
+           7478    0a0a    2036    6964    6572    7463    726f    6569
+0001500   s   ,  sp   3  sp   f   i   l   e   s  nl   /   p   r   o   j
+           2c73    3320    6620    6c69    7365    2f0a    7270    6a6f
+0001520   e   c   t   s   /   2   /   h   e   l   l   o   =   =   >   m
+           6365    7374    322f    682f    6c65    6f6c    3d3d    6d3e
+0001540   o   r   p   h  sp   -   r  sp   t   4   /   t   1  sp   t   3
+           726f    6870    2d20    2072    3474    742f    2031    3374
+0001560  nl   /   p   r   o   j   e   c   t   s   /   2   /   h   e   l
+           2f0a    7270    6a6f    6365    7374    322f    682f    6c65
+0001600   l   o   =   =   >   t   r   e   e  nl   .  nl   b dc4  fs   b
+           6f6c    3d3d    743e    6572    0a65    0a2e    94e2    e29c
+0001620 dc4 nul   b dc4 nul  sp   t   1  nl   b dc4 stx  sp  sp  sp   b
+           8094    94e2    2080    3174    e20a    8294    2020    e220
+0001640 dc4 dc4   b dc4 nul   b dc4 nul  sp   1   .   t   x   t  nl   b
+           9494    94e2    e280    8094    3120    742e    7478    e20a
+0001660 dc4  fs   b dc4 nul   b dc4 nul  sp   t   2  nl   b dc4 stx  sp
+           9c94    94e2    e280    8094    7420    0a32    94e2    2082
+0001700  sp  sp   b dc4 dc4   b dc4 nul   b dc4 nul  sp   t   1  nl   b
+           2020    94e2    e294    8094    94e2    2080    3174    e20a
+0001720 dc4 stx  sp  sp  sp  sp  sp  sp  sp   b dc4 dc4   b dc4 nul   b
+           8294    2020    2020    2020    e220    9494    94e2    e280
+0001740 dc4 nul  sp   1   .   t   x   t  nl   b dc4  fs   b dc4 nul   b
+           8094    3120    742e    7478    e20a    9c94    94e2    e280
+0001760 dc4 nul  sp   t   3  nl   b dc4 stx  sp  sp  sp   b dc4 dc4   b
+           8094    7420    0a33    94e2    2082    2020    94e2    e294
+0002000 dc4 nul   b dc4 nul  sp   t   1  nl   b dc4 stx  sp  sp  sp  sp
+           8094    94e2    2080    3174    e20a    8294    2020    2020
+0002020  sp  sp  sp   b dc4 dc4   b dc4 nul   b dc4 nul  sp   1   .   t
+           2020    e220    9494    94e2    e280    8094    3120    742e
+0002040   x   t  nl   b dc4 dc4   b dc4 nul   b dc4 nul  sp   t   4  nl
+           7478    e20a    9494    94e2    e280    8094    7420    0a34
+0002060  nl   6  sp   d   i   r   e   c   t   o   r   i   e   s   ,  sp
+           360a    6420    7269    6365    6f74    6972    7365    202c
+0002100   3  sp   f   i   l   e   s  nl   /   p   r   o   j   e   c   t
+           2033    6966    656c    0a73    702f    6f72    656a    7463
+0002120   s   /   2   /   h   e   l   l   o   =   =   >   c   a   t  sp
+           2f73    2f32    6568    6c6c    3d6f    3e3d    6163    2074
+0002140   t   3   /   t   1   /   1   .   t   x   t  nl   "   h   e   l
+           3374    742f    2f31    2e31    7874    0a74    6822    6c65
+0002160   l   o   "  nl   /   p   r   o   j   e   c   t   s   /   2   /
+           6f6c    0a22    702f    6f72    656a    7463    2f73    2f32
+0002200   h   e   l   l   o   =   =   >   e   s   c
+           6568    6c6c    3d6f    3e3d    7365    0063
+0002213

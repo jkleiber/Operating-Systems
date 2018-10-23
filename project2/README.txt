@@ -57,6 +57,9 @@ Known Bugs/Assumptions
 If the batch file submitted to the program does not exist (or is not a file)
 the program closes and prints an error.
 
+All redirections are assumed to occur at the end of the arguments list.
+All arguments after the first redirection will be ignored by this shell.
+
 References
 In general, I leaned on the man pages, lecture notes, and given code for help 
 on this assignment. I also looked back on what I did in project 1 (and copied 
