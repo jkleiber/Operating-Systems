@@ -87,7 +87,7 @@ int oufs_format_disk(char *virtual_disk_name)
     oufs_clean_directory_block(0, 0, &block);
 
     //Add the directory block to the file system
-    vdisk_write_block(N_INODE_BLOCKS + 1, block.directory.entry);
+    vdisk_write_block(ROOT_DIRECTORY_BLOCK, block.directory.entry);
 
     //Update the block allocation table
     vdisk_read_block(MASTER_BLOCK_REFERENCE, &block.master.inode_allocated_flag);
@@ -96,7 +96,7 @@ int oufs_format_disk(char *virtual_disk_name)
     
     //Add the directory block to the first inode
     oufs_read_inode_by_reference(0, &inode);
-    inode.data[0] = N_INODE_BLOCKS + 1;
+    inode.data[0] = ROOT_DIRECTORY_BLOCK;
     oufs_write_inode_by_reference(0, &inode);
 
     return 0;
@@ -153,6 +153,154 @@ int oufs_write_inode_by_reference(INODE_REFERENCE i, INODE *inode)
     if(vdisk_write_block(block_ref, block.inodes.inode))
     {
         return -1;
+    }
+
+    return 0;
+}
+
+/**
+ * 
+ */
+int oufs_find_file(char *cwd, char *path, INODE_REFERENCE *parent, BLOCK_REFERENCE *child, char **local_name)
+{
+    /* Declare local variables */
+    char *abs_path;
+    BLOCK_REFERENCE block_ref;
+    INODE inode;
+    INODE_REFERENCE next_inode_ref;
+    char *token;
+
+    //Initialize tree walking
+    *child = MASTER_BLOCK_REFERENCE;
+    *local_name = NULL;
+    *parent = 0;
+
+    //Concatenate the name onto the cwd if the name exists
+    if(path != NULL)
+    {
+        //If the input name is an absolute path use it instead
+        if(path[0] == '/')
+        {
+            abs_path = strdup(path);
+        }
+        //otherwise add the path to the cwd
+        else
+        {
+            abs_path = strdup(cwd);
+
+            //Make sure the current directory has a slash at the end
+            if(abs_path[strlen(abs_path) - 1] != '/')
+            {
+                abs_path = (char *)realloc(abs_path, (strlen(abs_path) + strlen(path) + 1) * sizeof(char));
+                strncat(abs_path, "/", 1);
+            }
+
+            strcat(abs_path, path);
+        }
+    }
+    //Otherwise just list the current directory
+    else
+    {
+        abs_path = strdup(cwd);
+    }
+
+    //Break the path into tokens
+    token = strtok(abs_path, "/");
+
+    //Only attempt to process non-zero paths
+    if(token)
+    {
+        //Get the next inode reference
+        next_inode_ref = get_next_inode(*parent, token, &block_ref);
+
+        //Find the associated inode for each token
+        while((token = strtok(NULL, "/")))
+        {
+            if(next_inode_ref != UNALLOCATED_INODE)
+            {
+                *parent = next_inode_ref;
+            }
+
+            next_inode_ref = get_next_inode(*parent, token, &block_ref);
+        }
+    }
+    //Otherwise, the root was asked for
+    else
+    {
+        next_inode_ref = *parent;
+        block_ref = ROOT_DIRECTORY_BLOCK;
+    }
+
+    //Read the inode of the found file
+    if(next_inode_ref != UNALLOCATED_INODE)
+    {
+        oufs_read_inode_by_reference(next_inode_ref, &inode);
+    }
+    //If the file was not found, give up!
+    else
+    {
+        return (-1);
+    }
+  
+    //IF the inode represents a file, set its local name
+    if(inode.type == IT_FILE)
+    {
+        *local_name = strdup(token);
+    }
+
+    //Set the child to the last returned block reference
+    *child = block_ref;
+
+    //Return success
+    return (0);
+}
+
+
+/**
+ * 
+ */
+int oufs_list(char *cwd, char *path)
+{
+    /* Declare local variables */
+    BLOCK               block;
+    BLOCK_REFERENCE     block_ref;
+    int                 i;          //iteration variable
+    char               *name;
+    INODE_REFERENCE     parent;
+
+    //Walk through the file tree to find the file or directory
+    if(oufs_find_file(cwd, path, &parent, &block_ref, &name))
+    {
+        //If no file was found, print an error
+        fprintf(stderr, "Unable to find file/directory at path: %s\n", path);
+        return -1;
+    }
+
+    //If name is NULL, we have a directory. Print its contents
+    if(name == NULL)
+    {
+        //Read the block that was found by the search
+        vdisk_read_block(block_ref, &block);
+
+        //Sort the directory entries by name
+        qsort(block.directory.entry, DIRECTORY_ENTRIES_PER_BLOCK, sizeof(DIRECTORY_ENTRY), oufs_dir_entry_comp);
+
+        //Go through all the directory entries
+        for(i = 0; i < DIRECTORY_ENTRIES_PER_BLOCK; ++i)
+        {
+            //Only print entries that exist and are not the . or .. directory
+            if(block.directory.entry[i].inode_reference != UNALLOCATED_INODE
+            && strcmp(block.directory.entry[i].name, ".")
+            && strcmp(block.directory.entry[i].name, ".."))
+            {
+                printf("%s\n", block.directory.entry[i].name);
+            }
+        }
+    }
+    //Otherwise a file was found. Print its name
+    else
+    {
+        printf("%s\n", name);
     }
 
     return 0;
@@ -271,6 +419,23 @@ BLOCK_REFERENCE oufs_allocate_new_block()
     return (block_reference);
 }
 
+/**
+ * 
+ */
+int oufs_dir_entry_comp(const void *a, const void *b)
+{
+    /* Declare local variables */
+    DIRECTORY_ENTRY a_entry;
+    DIRECTORY_ENTRY b_entry;
+
+    //Convert void pointers to directory entries
+    a_entry = *(DIRECTORY_ENTRY *)a;
+    b_entry = *(DIRECTORY_ENTRY *)b;
+    
+    //Return the ascii difference in the name strings
+    return strcmp(a_entry.name, b_entry.name);
+}
+
 /*
  *
  */
@@ -292,4 +457,48 @@ int oufs_find_open_bit(unsigned char value)
     }
 
     return bit;
+}
+
+INODE_REFERENCE get_next_inode(INODE_REFERENCE inode_ref, char *file, BLOCK_REFERENCE *block_ref)
+{
+    /* Declare local variables */
+    BLOCK block;
+    int i;
+    INODE inode;
+    int j;
+
+    //Initialize return values
+    *block_ref = UNALLOCATED_BLOCK;
+
+    //Get the inode data
+    if(oufs_read_inode_by_reference(inode_ref, &inode))
+    {
+        //if there is an error, return unallocated inode
+        return UNALLOCATED_INODE;
+    }
+
+    //Go through each entry in the inode until the file is found
+    for(i = 0; i < BLOCKS_PER_INODE; ++i)
+    {
+        //Only consider allocated blocks
+        if(inode.data[i] != UNALLOCATED_BLOCK)
+        {
+            //Read the directory block
+            vdisk_read_block(inode.data[i], &block);
+
+            //Loop through all directory entries to find the file
+            for(j = 0; j < DIRECTORY_ENTRIES_PER_BLOCK; ++j)
+            {
+                //If the file is found, set the block reference and return the inode reference
+                if(!strcmp(file, block.directory.entry[j].name))
+                {
+                    *block_ref = inode.data[i];
+                    return (block.directory.entry[j].inode_reference);
+                }
+            }
+        }
+    }
+
+    //The file could not be found, so return the unallocated inode
+    return (UNALLOCATED_INODE);
 }
