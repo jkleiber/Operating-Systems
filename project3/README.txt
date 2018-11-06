@@ -20,3 +20,6 @@ https://www.tutorialspoint.com/c_standard_library/c_function_qsort.htm
 
 For formatting the comparator function used in qsort, I found this link:
 https://www.geeksforgeeks.org/comparator-function-of-qsort-in-c/
+
+To implement my version of basename, I found this forum post:
+https://stackoverflow.com/questions/32822988/get-the-last-token-of-a-string-in-c

@@ -4,8 +4,7 @@ CFLAGS = -c -I -O3 -Wall
 OUFS = oufs_lib_support.o vdisk.o
 
 #Default to make the executable
-all: zinspect zformat zfilez zrmdir
-#zmkdir
+all: zinspect zformat zfilez zrmdir zmkdir
 
 #Clean the project workspace
 clean: 
@@ -13,7 +12,7 @@ clean:
 	rm zinspect
 	rm zformat
 	rm zfilez
-	#rm zmkdir
+	rm zmkdir
 	rm zrmdir
 
 #Convert the C files to O files

@@ -26,7 +26,7 @@ File system layout onto disk blocks:
 Block 0: Master block
 Blocks 1 ... N_INODE_BLOCKS: inodes
 Blocks N_INODE_BLOCKS+1 ... N_BLOCKS_ON_DISK-1: data for files and directories
-   (Block N_BLOCKS+1 is allocated for the root directory)
+   (Block N_INODE_BLOCKS+1 is allocated for the root directory)
 */
 
 /**********************************************************************/
