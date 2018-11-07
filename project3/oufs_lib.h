@@ -11,7 +11,7 @@ void oufs_get_environment(char *cwd, char *disk_name);
 int oufs_format_disk(char *virtual_disk_name);
 int oufs_read_inode_by_reference(INODE_REFERENCE i, INODE *inode);
 int oufs_write_inode_by_reference(INODE_REFERENCE i, INODE *inode);
-int oufs_find_file(char *cwd, char *path, INODE_REFERENCE *parent, BLOCK_REFERENCE *child);
+int oufs_find_file(char *cwd, char *path, INODE_REFERENCE *parent, BLOCK_REFERENCE *child, DIRECTORY_ENTRY *dir_entry);
 int oufs_mkdir(char *cwd, char *path);
 int oufs_list(char *cwd, char *path);
 int oufs_rmdir(char *cwd, char *path);
@@ -21,10 +21,12 @@ void oufs_clean_directory_block(INODE_REFERENCE self, INODE_REFERENCE parent, BL
 void oufs_clean_directory_entry(DIRECTORY_ENTRY *entry);
 BLOCK_REFERENCE oufs_allocate_new_block();
 INODE_REFERENCE oufs_allocate_new_inode(INODE_REFERENCE parent);
+void oufs_deallocate_block(BLOCK_REFERENCE block_ref);
+void oufs_deallocate_inode(INODE_REFERENCE inode_ref);
 
 // Helper functions to be provided
 int oufs_find_open_bit(unsigned char value);
-INODE_REFERENCE get_next_inode(INODE_REFERENCE inode_ref, char *file, BLOCK_REFERENCE *block_ref);
+INODE_REFERENCE get_next_inode(INODE_REFERENCE inode_ref, char *file, BLOCK_REFERENCE *block_ref, DIRECTORY_ENTRY *dir_entry);
 int oufs_dir_entry_comp(const void *a, const void *b);
 char* oufs_basename(char *path);
 
