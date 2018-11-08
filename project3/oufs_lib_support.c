@@ -273,40 +273,52 @@ int oufs_mkdir(char *cwd, char *path)
         return (-1);
     }
     
-    //Allocate a new inode
-    child = oufs_allocate_new_inode(parent);
+    //Find out if space in the parent inode exists
+    result = oufs_find_space_available(parent);
 
-    //Get the target inode
-    if(!oufs_read_inode_by_reference(parent, &parent_inode))
+    //If there is space available, make the new directory
+    if(!result)
     {
-        //Add an entry to the parent directory that points to the child inode
-        entry.inode_reference = child;
-        name = basename(path);
-        strncpy(entry.name, name, FILE_NAME_SIZE);
-
-        //Add an entry to the directory
-        vdisk_read_block(parent_inode.data[0], &block);
-
-        //Only add directories if they fit
-        if(parent_inode.size < DIRECTORY_ENTRIES_PER_BLOCK)
+        //Allocate a new inode
+        child = oufs_allocate_new_inode(parent);
+    
+        //Get the target inode
+        if(!oufs_read_inode_by_reference(parent, &parent_inode))
         {
-            block.directory.entry[parent_inode.size] = entry;
-            parent_inode.size++;
-
-            //Write the changes
-            vdisk_write_block(parent_inode.data[0], &block);
-            oufs_write_inode_by_reference(parent, &parent_inode);
+            //Add an entry to the parent directory that points to the child inode
+            entry.inode_reference = child;
+            name = basename(path);
+            strncpy(entry.name, name, FILE_NAME_SIZE);
+    
+            //Add an entry to the directory
+            vdisk_read_block(parent_inode.data[0], &block);
+    
+            //Only add directories if they fit
+            if(parent_inode.size < DIRECTORY_ENTRIES_PER_BLOCK)
+            {
+                block.directory.entry[parent_inode.size] = entry;
+                parent_inode.size++;
+    
+                //Write the changes
+                vdisk_write_block(parent_inode.data[0], &block);
+                oufs_write_inode_by_reference(parent, &parent_inode);
+            }
+            //If there is no more space in this directory, throw an error
+            else
+            {
+                fprintf(stderr, "Error: no more space left in this directory\n");
+                return (-1);
+            }
         }
-        //If there is no more space in this directory, throw an error
         else
         {
-            fprintf(stderr, "Error: no more space left in this directory\n");
-            return (-1);
+            fprintf(stderr, "Could not open parent directory\n");
         }
     }
+    //Print an error saying there is no space left in this parent directory
     else
     {
-        fprintf(stderr, "Could not open parent directory\n");
+        fprintf(stderr, "Unable to make directory at %s: out of space\n", path);
     }
 
     //Indicate success
@@ -692,6 +704,25 @@ int oufs_dir_entry_comp(const void *a, const void *b)
     
     //Return the ascii difference in the name strings
     return strcmp(a_entry.name, b_entry.name);
+}
+
+/**
+ * 
+ */
+int oufs_find_space_available(INODE_REFERENCE parent)
+{
+    /* Declare local variables */
+    INODE inode;
+
+    //Read in the inode
+    oufs_read_inode_by_reference(parent, &inode);
+
+    if(inode.size == 15)
+    {
+        return (-1);
+    }
+
+    return (0);
 }
 
 /*

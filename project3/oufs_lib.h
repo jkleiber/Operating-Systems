@@ -28,7 +28,7 @@ void oufs_deallocate_inode(INODE_REFERENCE inode_ref);
 int oufs_find_open_bit(unsigned char value);
 INODE_REFERENCE get_next_inode(INODE_REFERENCE inode_ref, char *file, BLOCK_REFERENCE *block_ref, DIRECTORY_ENTRY *dir_entry);
 int oufs_dir_entry_comp(const void *a, const void *b);
-char* oufs_basename(char *path);
+int oufs_find_space_available(INODE_REFERENCE parent);
 
 // PROJECT 4 ONLY
 OUFILE *oufs_fopen(char *cwd, char *path, char *mode);
