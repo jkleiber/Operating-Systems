@@ -19,6 +19,7 @@ int oufs_rmdir(char *cwd, char *path);
 // Helper functions in oufs_lib_support.c
 void oufs_clean_directory_block(INODE_REFERENCE self, INODE_REFERENCE parent, BLOCK *block);
 void oufs_clean_directory_entry(DIRECTORY_ENTRY *entry);
+void oufs_clean_inode(INODE_REFERENCE inode_ref);
 BLOCK_REFERENCE oufs_allocate_new_block();
 INODE_REFERENCE oufs_allocate_new_inode(INODE_REFERENCE parent);
 void oufs_deallocate_block(BLOCK_REFERENCE block_ref);
