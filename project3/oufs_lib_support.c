@@ -41,13 +41,16 @@ void oufs_get_environment(char *cwd, char *disk_name)
 }
 
 /**
+ * Formats the virtual disk so it can be used by the system
  * 
+ * @param *virtual_disk_name: name of disk to format
+ * @return: 0 if successful
  */
 int oufs_format_disk(char *virtual_disk_name)
 {
     /* Declare local variables */
-    BLOCK           block;
-    BLOCK_REFERENCE block_ref;
+    BLOCK           block;      //Blocks to format
+    BLOCK_REFERENCE block_ref;  //references to format
 
     //Set everything in the block and inode to 0
     memset(block.data.data, 0, BLOCK_SIZE);
@@ -111,14 +114,18 @@ int oufs_read_inode_by_reference(INODE_REFERENCE i, INODE *inode)
 }
 
 /**
+ * Writes an inode to the file system
  * 
+ * @param i: reference to write inode to
+ * @param *inode: data to write
+ * @return: 0 on success, non-zero on failure
  */
 int oufs_write_inode_by_reference(INODE_REFERENCE i, INODE *inode)
 {
     /* Declare local variables */
-    BLOCK           block;
-    BLOCK_REFERENCE block_ref;
-    int             element;
+    BLOCK           block;      //block to update
+    BLOCK_REFERENCE block_ref;  //reference to the block needing update
+    int             element;    //element to update in the block
 
     // Find location in block
     block_ref = (i / INODES_PER_BLOCK) + 1;
@@ -142,20 +149,29 @@ int oufs_write_inode_by_reference(INODE_REFERENCE i, INODE *inode)
         return -1;
     }
 
+    //return success
     return 0;
 }
 
 /**
+ * Finds a file based on a cwd and path, and returns its parent inode reference, 
+ * and its block reference and its directory entry.
  * 
+ * @param *cwd: current working directory
+ * @param *path: path to file to try to find
+ * @param *parent: parent inode reference to file
+ * @param *child: block reference of the file
+ * @param *dir_entry: directory entry details of a file
+ * @return: positive if path does not exist, negative if file cannot be found and path exists, 0 if found 
  */
 int oufs_find_file(char *cwd, char *path, INODE_REFERENCE *parent, BLOCK_REFERENCE *child, DIRECTORY_ENTRY *dir_entry)
 {
     /* Declare local variables */
-    char *abs_path;
-    BLOCK_REFERENCE block_ref;
-    int missing_tokens;
-    INODE_REFERENCE next_inode_ref;
-    char *token;
+    char           *abs_path;       //absolute path to a file
+    BLOCK_REFERENCE block_ref;      //reference to a block the file may be in
+    int             missing_tokens; //missing tokens in a given path            
+    INODE_REFERENCE next_inode_ref; //the next inode reference in the sequence
+    char           *token;          //token for path string
 
     //Initialize tree walking
     *child = MASTER_BLOCK_REFERENCE;
@@ -253,19 +269,23 @@ int oufs_find_file(char *cwd, char *path, INODE_REFERENCE *parent, BLOCK_REFEREN
 }
 
 /**
+ * Makes a directory at a given location. Does not do so recursively
  * 
+ * @param *cwd: current working directory
+ * @param *path: path to create a directory at
+ * @return: 0 on success
  */
 int oufs_mkdir(char *cwd, char *path)
 {
     /* Declare local variables */
-    BLOCK           block;
-    BLOCK_REFERENCE block_ref;
-    INODE_REFERENCE child;
-    int             i;
-    char           *name;
-    INODE_REFERENCE parent;
-    INODE           parent_inode;
-    int             result;
+    BLOCK           block;          //block for writing new stuff to
+    BLOCK_REFERENCE block_ref;      //reference to the block for writing
+    INODE_REFERENCE child;          //inode reference to the new dir
+    int             i;              //iteration variable
+    char           *name;           //name of the file to create
+    INODE_REFERENCE parent;         //parent of the made directory
+    INODE           parent_inode;   //parent inode of new dir
+    int             result;         //result of different operations
 
     //See if the directory and/or its path exists
     result = oufs_find_file(cwd, path, &parent, &block_ref, NULL);
@@ -335,17 +355,21 @@ int oufs_mkdir(char *cwd, char *path)
 
 
 /**
+ * Lists all the files and directories located at a path
  * 
+ * @param *cwd: current working directory
+ * @param *path: path to list
+ * @return: 0 on success
  */
 int oufs_list(char *cwd, char *path)
 {
     /* Declare local variables */
-    BLOCK               block;
-    BLOCK_REFERENCE     block_ref;
+    BLOCK               block;      //block to list
+    BLOCK_REFERENCE     block_ref;  //reference to block to list
     int                 i;          //iteration variable
-    INODE               inode;
-    char               *name;
-    INODE_REFERENCE     parent;
+    INODE               inode;      //inode to list
+    char               *name;       //name of the file to list if applicable
+    INODE_REFERENCE     parent;     //parent of the list directory
 
     //Initialize variables
     name = NULL;
@@ -400,19 +424,30 @@ int oufs_list(char *cwd, char *path)
 }
 
 /**
+ * Removes an empty directory from the file system
  * 
+ * @param *cwd: current working directory in the file system
+ * @param *path: path to a directory to remove
+ * @return: 0 if successful, non-zero if unsuccessful
  */
 int oufs_rmdir(char *cwd, char *path)
 {
     /* Declare local variables */
-    BLOCK           block;
-    BLOCK_REFERENCE block_ref;
-    DIRECTORY_ENTRY dir_entry;
-    int             i;
-    INODE           inode;
-    INODE_REFERENCE parent;
-    INODE           parent_inode;
+    BLOCK           block;          //block for reading and writing
+    BLOCK_REFERENCE block_ref;      //block reference for block to read/write
+    DIRECTORY_ENTRY dir_entry;      //directory entry for 
+    int             i;              //iteration variable
+    INODE           inode;          //i-node for removal operations
+    INODE_REFERENCE parent;         //reference to parent inode of file being removed
+    INODE           parent_inode;   //parent inode of removed directory
     
+    //If we are deleting something that can't be deleted, throw an error
+    if(!strcmp(path, "..") || !strcmp(path, "/") || !strcmp(path, "."))
+    {
+        fprintf(stderr, "Error: cannot remove %s, protected directory type.\n", path);
+        return (-1);
+    }
+
     //Walk through the file tree to find the file or directory
     if(oufs_find_file(cwd, path, &parent, &block_ref, &dir_entry))
     {
@@ -472,12 +507,14 @@ int oufs_rmdir(char *cwd, char *path)
         parent_inode.size--;
         oufs_write_inode_by_reference(parent, &parent_inode);
     }
+    //Print an error if the directory is not empty
     else
     {
         fprintf(stderr, "Error: directory not empty\n");
         return (-1);
     }
 
+    //Return success
     return (0);
 }
 
@@ -531,17 +568,22 @@ void oufs_clean_directory_block(INODE_REFERENCE self, INODE_REFERENCE parent, BL
 }
 
 /**
+ * Cleans an inode by reference and writes it to disk
  * 
+ * @param inode_ref: reference to the inode to clean
  */
 void oufs_clean_inode(INODE_REFERENCE inode_ref)
 {
-    INODE inode;
+    /* Declare local variables */
+    INODE inode; //inode that needs cleaning
 
+    //Clean the inode
     inode.type = IT_NONE;
     inode.n_references = 0;
     memset(inode.data, UNALLOCATED_BLOCK, BLOCKS_PER_INODE * sizeof(BLOCK_REFERENCE));
     inode.size = 0;
 
+    //Write changes to disk
     oufs_write_inode_by_reference(inode_ref, &inode);
 }
 
@@ -611,17 +653,20 @@ BLOCK_REFERENCE oufs_allocate_new_block()
 }
 
 /**
+ * Allocate new inode based on the parent inode reference
  * 
+ * @param parent: the allocated inode's parent
+ * @return: an inode reference to the new child inode
  */
 INODE_REFERENCE oufs_allocate_new_inode(INODE_REFERENCE parent)
 {
     /* Declare local variables */
-    BLOCK           block;
-    BLOCK_REFERENCE block_ref;
-    INODE           inode;
-    int             inode_bit;
-    int             inode_byte;
-    INODE_REFERENCE inode_ref;
+    BLOCK           block;      //block for reading and writing to master
+    BLOCK_REFERENCE block_ref;  //reference to a block
+    INODE           inode;      //inode to initialize
+    int             inode_bit;  //bit in allocation table for inode
+    int             inode_byte; //byte in allocaion table for inode
+    INODE_REFERENCE inode_ref;  //reference to inode
 
     //Read the master block to analyze the allocation table
     vdisk_read_block(MASTER_BLOCK_REFERENCE, &block);
@@ -673,14 +718,16 @@ INODE_REFERENCE oufs_allocate_new_inode(INODE_REFERENCE parent)
 }
 
 /**
+ * Deallocate a block bassed on its reference
  * 
+ * @param block_ref: reference to a block to deallocate
  */
 void oufs_deallocate_block(BLOCK_REFERENCE block_ref)
 {
     /* Declare local variables */
-    BLOCK block;
-    int block_bit;
-    int block_byte;
+    BLOCK block;    //block for reading/writing to master block
+    int block_bit;  //bit in allocation table for block
+    int block_byte; //byte in allocation table for block
 
     //Find location in the allocation table
     block_byte = block_ref / 8;
@@ -695,14 +742,16 @@ void oufs_deallocate_block(BLOCK_REFERENCE block_ref)
 }
 
 /**
+ * Deallocates an inode by its inode reference
  * 
+ * @param inode_ref: reference to inode to deallocate
  */
 void oufs_deallocate_inode(INODE_REFERENCE inode_ref)
 {
     /* Declare local variables */
-    BLOCK block;
-    int inode_bit;
-    int inode_byte;
+    BLOCK block;    //block for reading/writing master block
+    int inode_bit;  //bit for the inode to deallocate
+    int inode_byte; //byte for the inode to deallocate
 
     //Find location in the allocation table
     inode_byte = inode_ref / N_INODE_BLOCKS;
@@ -717,13 +766,17 @@ void oufs_deallocate_inode(INODE_REFERENCE inode_ref)
 }
 
 /**
+ * Compares two directory entries by name. Used for qsort and file sorting
  * 
+ * @param *a: a directory entry
+ * @param *b: another directory entry
+ * @return: how a compares to b in the form of an integer
  */
 int oufs_dir_entry_comp(const void *a, const void *b)
 {
     /* Declare local variables */
-    DIRECTORY_ENTRY a_entry;
-    DIRECTORY_ENTRY b_entry;
+    DIRECTORY_ENTRY a_entry;    //one of the directory entries
+    DIRECTORY_ENTRY b_entry;    //the other directory entry
 
     //Convert void pointers to directory entries
     a_entry = *(DIRECTORY_ENTRY *)a;
@@ -734,31 +787,39 @@ int oufs_dir_entry_comp(const void *a, const void *b)
 }
 
 /**
+ * Finds out if any space is available in a directory for writing.
  * 
+ * @param parent: reference to the inode that we need to check for space availability
+ * @return: 0 if there is space available, non-zero if not
  */
 int oufs_find_space_available(INODE_REFERENCE parent)
 {
     /* Declare local variables */
-    INODE inode;
+    INODE inode;    //inode to find the parent reference
 
     //Read in the inode
     oufs_read_inode_by_reference(parent, &inode);
 
+    //If the inode size can't support more files, indicate the inode is full
     if(inode.size == DIRECTORY_ENTRIES_PER_BLOCK)
     {
         return (-1);
     }
 
+    //Return success
     return (0);
 }
 
 /*
- *
+ * Finds an open bit in a byte in the allocation table
+ * 
+ * @param value: byte in allocation table to explore
+ * @return: the first available bit in this byte (least significant being first)
  */
 int oufs_find_open_bit(unsigned char value)
 {
     /* Declare local variables */
-    int bit;
+    int bit;    //first available bit
 
     //Initialize local variables
     bit = 0;
@@ -766,25 +827,33 @@ int oufs_find_open_bit(unsigned char value)
     //Loop through the bits in value and find the first one that has a 0
     for (; bit < 8; ++bit)
     {
+        //If the current shifted bit is 0, break our and return the bit
         if (!((value >> bit) & 1))
         {
             break;
         }
     }
 
+    //Return the first open bit
     return bit;
 }
 
 /**
+ * Get the next inode in a file search
  * 
+ * @param inode_ref: reference to current inode
+ * @param *file: the file that needs to be found in this inode
+ * @param *block_ref: return value for the child's block reference
+ * @param *dir_entry: directory entry for the found file
+ * @return: the next inode reference in the sequence
  */
 INODE_REFERENCE get_next_inode(INODE_REFERENCE inode_ref, char *file, BLOCK_REFERENCE *block_ref, DIRECTORY_ENTRY *dir_entry)
 {
     /* Declare local variables */
-    BLOCK block;
-    int i;
-    INODE inode;
-    int j;
+    BLOCK block;    //block for reading and writing
+    int i;          //iteration variable
+    INODE inode;    //inode for the current inode reference
+    int j;          //iteration variable
 
     //Initialize return values
     *block_ref = UNALLOCATED_BLOCK;
