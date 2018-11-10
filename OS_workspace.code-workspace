@@ -1,18 +1,24 @@
 {
-	"folders": [
-		{
-			"path": "midterm"
-		},
-		{
-			"path": "project0"
-		},
-		{
-			"path": "project1"
-		},
-		{
-			"path": "project2"
-		}
-	],
+    "folders": [
+        {
+            "path": "midterm"
+        },
+        {
+            "path": "project0"
+        },
+        {
+            "path": "project1"
+        },
+        {
+            "path": "project2"
+        },
+        {
+            "path": "project3"
+        },
+        {
+            "path": "project4"
+        }
+    ],
 	"settings": {
 		"files.associations": {
 			"input_handler.h": "c"
