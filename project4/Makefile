@@ -41,5 +41,5 @@ zrmdir: zrmdir.o $(OUFS)
 	$(CC) zrmdir.o $(OUFS) -o zrmdir
 	
 #Build the ztouch program
-zrmdir: ztouch.o $(OUFS)
+ztouch: ztouch.o $(OUFS)
 	$(CC) ztouch.o $(OUFS) -o ztouch
