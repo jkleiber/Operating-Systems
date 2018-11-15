@@ -32,7 +32,6 @@ int oufs_dir_entry_comp(const void *a, const void *b);
 int oufs_find_space_available(INODE_REFERENCE parent);
 
 // PROJECT 4 ONLY
-void oufs_touch(char *cwd, char *path);
 OUFILE *oufs_fopen(char *cwd, char *path, char *mode);
 void oufs_fclose(OUFILE *fp);
 int oufs_fwrite(OUFILE *fp, unsigned char *buf, int len);
