@@ -1,30 +1,17 @@
-Project 3
+Project 4
 
 Name: Justin Kleiber
 
 Email address: jkleiber@ou.edu | jkleiber8@gmail.com
 
-Date: 10/21/2018
+Date: 11/15/2018
 
 Description
-For the OUFS filesystem, I have developed code that interacts
-with a virtual disk. This code is based off of the framework
-posted on the course webpage.
-
-My main strategy was to beef up the API and make it carry the workload.
-I made helper functions to find files easier and to allocate and deallocate
-blocks and inodes. The search function is the backbone of my program, as a
-file tree walk is used to find the applicable directory entries. I use 
-string tokenization to split the paths provided and use that to walk the 
-tree and find files.
+I have built on my project 3 code for this project. My ztouch function
+uses the fopen and fclose functions provided in the API, which I have coded.
+My code from project 3 needed some minor adjustments to handle the files in
+the file system (i.e. not assuming everything is a directory).
 
 References
-I mainly built my code off the provided code on the course website.
-I consulted with Trey Sullivent, Alex Miller and Noah Zemlin on edge case
-theorizing and code requirements
+So far I have only discussed the project in passing with Trey Sullivent
 
-I used this link to learn how to use qsort():
-https://www.tutorialspoint.com/c_standard_library/c_function_qsort.htm
-
-For formatting the comparator function used in qsort, I found this link:
-https://www.geeksforgeeks.org/comparator-function-of-qsort-in-c/
