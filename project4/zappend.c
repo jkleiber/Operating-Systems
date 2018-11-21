@@ -51,6 +51,6 @@ int main(int argc, char **argv)
     else
     {
         //Wrong number of parameters
-        fprintf(stderr, "Input error: correct format is zcreate <file>\n");
+        fprintf(stderr, "Input error: correct format is zappend <file>\n");
     }
 }

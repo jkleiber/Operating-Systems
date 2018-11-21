@@ -960,8 +960,8 @@ OUFILE *oufs_fopen(char *cwd, char *path, char *mode)
         {
             file->offset = child_inode.size;
         }
-        //Otherwise put the offset at the start and deallocate all data blocks
-        else
+        //If we are writing put the offset at the start and deallocate all data blocks
+        else if(mode[0] == 'w')
         {
             //Reset offset
             file->offset = 0;
@@ -973,8 +973,16 @@ OUFILE *oufs_fopen(char *cwd, char *path, char *mode)
             }
 
             //Reset this inode's data
-            child_inode.size = 0;
+            oufs_clean_inode(file->inode_reference);
+            oufs_read_inode_by_reference(file->inode_reference, &child_inode);
+            child_inode.type = IT_FILE;
+            child_inode.n_references = 1;
             oufs_write_inode_by_reference(file->inode_reference, &child_inode);
+        }
+        //IF we are reading, put the offset at the start
+        else
+        {
+            file->offset = 0;
         }
 
         //Return the file that has been found
@@ -1086,6 +1094,15 @@ int oufs_fwrite(OUFILE *fp, unsigned char *buf, int len)
     {
         //Find the block to write to
         block_index = fp->offset / BLOCK_SIZE;
+
+        //If the file offset is greater than or equal to the maximum size, end writing
+        if(block_index >= BLOCKS_PER_INODE)
+        {
+            //Return number of bytes written
+            return i;
+        }
+
+        //From the index in the inode table, the block to write to can be determined
         data_block_ref = file_inode.data[block_index];
 
         //Find the location in the block for writing
@@ -1099,11 +1116,8 @@ int oufs_fwrite(OUFILE *fp, unsigned char *buf, int len)
             oufs_write_inode_by_reference(fp->inode_reference, &file_inode);
         }
 
-        //Open the block (if needed)
-        if(i == 0 || block_offset == 0)
-        {
-            vdisk_read_block(data_block_ref, &data_block);
-        }
+        //Open the block
+        vdisk_read_block(data_block_ref, &data_block);
 
         //Add the character to the block
         data_block.data.data[block_offset] = buf[i];
@@ -1112,15 +1126,85 @@ int oufs_fwrite(OUFILE *fp, unsigned char *buf, int len)
         file_inode.size++;
         oufs_write_inode_by_reference(fp->inode_reference, &file_inode);
 
-        //Write the block if needed
-        if(i == (len -1) || block_offset == (BLOCK_SIZE - 1))
-        {
-            vdisk_write_block(data_block_ref, &data_block);
-        }
+        //Write the block
+        vdisk_write_block(data_block_ref, &data_block);
 
         //Increment the file pointer offset
         fp->offset++;
     }
     
-    return 0;
+    return len;
+}
+
+/**
+ * 
+ */
+int oufs_fread(OUFILE *fp, unsigned char *buf, int len)
+{
+    /* Declare local variables */
+    int             block_index;    //index of block in inode data table
+    int             block_offset;   //offset inside of block to write to
+    BLOCK           data_block;     //block for write operation
+    BLOCK_REFERENCE data_block_ref; //reference to the data block
+    INODE           file_inode;     //inode of the file
+    int             i;              //iteration variable
+
+    //Only read from files that were opened for reading
+    if(fp->mode != 'r')
+    {
+        fprintf(stderr, "Error, this file is not open for read operation\n");
+        return (-2);
+    }
+
+    //Open the file's inode
+    if(oufs_read_inode_by_reference(fp->inode_reference, &file_inode))
+    {
+        fprintf(stderr, "Error, unable to open file for reading\n");
+        return (-1);
+    }
+
+    //Only read if the output buffer is valid
+    if(buf)
+    {
+        //Read through the file for len bytes
+        for(i = 0; i < len; ++i)
+        {
+            //If the file offset is greater than or equal to the file size, end reading
+            if(fp->offset >= file_inode.size)
+            {
+                //Return number of bytes read
+                return i;
+            }
+
+            //Find the block to read
+            block_index = fp->offset / BLOCK_SIZE;
+            data_block_ref = file_inode.data[block_index];
+
+            //End early if the block is unallocated
+            if(data_block_ref == UNALLOCATED_BLOCK)
+            {
+                //Return number of bytes read
+                return i;
+            }
+
+            //Find the location in the block to read
+            block_offset = fp->offset % BLOCK_SIZE;
+
+            //Open the block
+            vdisk_read_block(data_block_ref, &data_block);
+
+            //Read a character into the block
+            buf[i] = data_block.data.data[block_offset];
+
+            //Increment the file pointer offset
+            fp->offset++;
+        }
+    }
+    else
+    {
+        fprintf(stderr, "Error: no output buffer specified\n");
+        return (-3);
+    }
+
+    return len;
 }
