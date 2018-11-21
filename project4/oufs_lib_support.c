@@ -908,6 +908,9 @@ INODE_REFERENCE get_next_inode(INODE_REFERENCE inode_ref, char *file, BLOCK_REFE
     return (UNALLOCATED_INODE);
 }
 
+/**
+ * 
+ */
 OUFILE *oufs_fopen(char *cwd, char *path, char *mode)
 {
     /* Declare local variables */
@@ -949,8 +952,30 @@ OUFILE *oufs_fopen(char *cwd, char *path, char *mode)
 
         //Since the file is found, gather its information 
         file->inode_reference = child_dir_entry.inode_reference;
-        file->offset = 0;
         file->mode = mode[0];
+
+        //Based on the file's mode, set the offset
+        //If the file is being appended to, put the offset at the end
+        if(mode[0] == 'a')
+        {
+            file->offset = child_inode.size;
+        }
+        //Otherwise put the offset at the start and deallocate all data blocks
+        else
+        {
+            //Reset offset
+            file->offset = 0;
+
+            //Deallocate data blocks
+            for(i = 0; i < BLOCKS_PER_INODE; ++i)
+            {
+                oufs_deallocate_block(child_inode.data[i]);
+            }
+
+            //Reset this inode's data
+            child_inode.size = 0;
+            oufs_write_inode_by_reference(file->inode_reference, &child_inode);
+        }
 
         //Return the file that has been found
         return (file);
@@ -1027,4 +1052,75 @@ void oufs_fclose(OUFILE *fp)
     //Free the file pointer from memory and set it to NULL
     free(fp);
     fp = NULL;
+}
+
+/**
+ * 
+ */
+int oufs_fwrite(OUFILE *fp, unsigned char *buf, int len)
+{
+    /* Declare local variables */
+    int             block_index;    //index of block in inode data table
+    int             block_offset;   //offset inside of block to write to
+    BLOCK           data_block;     //block for write operation
+    BLOCK_REFERENCE data_block_ref; //reference to the data block
+    INODE           file_inode;     //inode of the file
+    int             i;              //iteration variable
+
+    //Only write to files that were opened for writing or appending
+    if(fp->mode == 'r')
+    {
+        fprintf(stderr, "Error, this file is not open for write operation\n");
+        return (-2);
+    }
+
+    //Open the file's inode
+    if(oufs_read_inode_by_reference(fp->inode_reference, &file_inode))
+    {
+        fprintf(stderr, "Error, unable to open file for writing\n");
+        return (-1);
+    }
+
+    //Insert the characters
+    for(i = 0; i < len; ++i)
+    {
+        //Find the block to write to
+        block_index = fp->offset / BLOCK_SIZE;
+        data_block_ref = file_inode.data[block_index];
+
+        //Find the location in the block for writing
+        block_offset = fp->offset % BLOCK_SIZE;
+
+        //Allocate a new block if needed
+        if(data_block_ref == UNALLOCATED_BLOCK)
+        {
+            data_block_ref = oufs_allocate_new_block();
+            file_inode.data[block_index] = data_block_ref;
+            oufs_write_inode_by_reference(fp->inode_reference, &file_inode);
+        }
+
+        //Open the block (if needed)
+        if(i == 0 || block_offset == 0)
+        {
+            vdisk_read_block(data_block_ref, &data_block);
+        }
+
+        //Add the character to the block
+        data_block.data.data[block_offset] = buf[i];
+
+        //Increment the size of the inode
+        file_inode.size++;
+        oufs_write_inode_by_reference(fp->inode_reference, &file_inode);
+
+        //Write the block if needed
+        if(i == (len -1) || block_offset == (BLOCK_SIZE - 1))
+        {
+            vdisk_write_block(data_block_ref, &data_block);
+        }
+
+        //Increment the file pointer offset
+        fp->offset++;
+    }
+    
+    return 0;
 }

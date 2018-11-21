@@ -4,7 +4,7 @@ CFLAGS = -c -I -O3 -Wall
 OUFS = oufs_lib_support.o vdisk.o
 
 #Default to make the executable
-all: zinspect zformat zfilez zrmdir zmkdir ztouch
+all: zinspect zformat zfilez zrmdir zmkdir ztouch zcreate zappend
 
 #Clean the project workspace
 clean: 
@@ -15,6 +15,8 @@ clean:
 	rm zmkdir
 	rm zrmdir
 	rm ztouch
+	rm zcreate
+	rm zappend
 
 #Convert the C files to O files
 .c.o:
@@ -43,3 +45,11 @@ zrmdir: zrmdir.o $(OUFS)
 #Build the ztouch program
 ztouch: ztouch.o $(OUFS)
 	$(CC) ztouch.o $(OUFS) -o ztouch
+	
+#Build the zcreate program
+zcreate: zcreate.o $(OUFS)
+	$(CC) zcreate.o $(OUFS) -o zcreate
+	
+#Build the zappend program
+zappend: zappend.o $(OUFS)
+	$(CC) zappend.o $(OUFS) -o zappend

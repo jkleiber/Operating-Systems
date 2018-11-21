@@ -19,8 +19,8 @@ int main(int argc, char **argv)
         //Open the virtual disk
         vdisk_disk_open(disk_name);
 
-        // Make the specified file if possible
-        file = oufs_fopen(cwd, argv[1], "w");
+        //Make the specified file if possible
+        file = oufs_fopen(cwd, argv[1], "a");
 
         //Close the file
         oufs_fclose(file);
