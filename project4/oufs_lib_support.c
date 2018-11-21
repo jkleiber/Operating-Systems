@@ -1208,3 +1208,76 @@ int oufs_fread(OUFILE *fp, unsigned char *buf, int len)
 
     return len;
 }
+
+/**
+ * 
+ */
+int oufs_remove(char *cwd, char *path)
+{
+    /* Declare local variables */
+    BLOCK_REFERENCE child_block_ref;
+    DIRECTORY_ENTRY child_dir_entry;
+    INODE           child_inode;
+    int             i;
+    BLOCK           parent_dir_block;
+    INODE           parent_inode;
+    INODE_REFERENCE parent_ref;
+    int             result;
+
+    //Attempt to find the file in the filesystem
+    result = oufs_find_file(cwd, path, &parent_ref, &child_block_ref, &child_dir_entry);
+
+    //IF the file does not exist, this is an error
+    if(result)
+    {
+        fprintf(stderr, "Error: file to remove does not exist\n");
+        return (-1);
+    }
+    //Otherwise, keep trying to remove the file
+    else
+    {
+        //Get the child's inode data
+        oufs_read_inode_by_reference(child_dir_entry.inode_reference, &child_inode);
+
+        //If this entry is not a file, then it cannot be removed
+        if(child_inode.type != IT_FILE)
+        {
+            fprintf(stderr, "Error: file to remove is actually a directory\n");
+            return(-1);
+        }
+
+        //Get the parent inode's list of entries
+        oufs_read_inode_by_reference(parent_ref, &parent_inode);
+        vdisk_read_block(parent_inode.data[0], &parent_dir_block);
+
+        //Remove this entry from the list
+        for(i = 0; i < DIRECTORY_ENTRIES_PER_BLOCK; ++i)
+        {
+            if(parent_dir_block.directory.entry[i].inode_reference == child_dir_entry.inode_reference)
+            {
+                oufs_clean_directory_entry(&parent_dir_block.directory.entry[i]);
+                break;
+            }
+        }
+
+        //Decrement the parent inode's size
+        parent_inode.size--;
+
+        //Decrement the number of references to the file
+        child_inode.n_references--;
+
+        //Write the changes
+        vdisk_write_block(parent_inode.data[0], &parent_dir_block);
+        oufs_write_inode_by_reference(parent_ref, &parent_inode);
+        oufs_write_inode_by_reference(child_dir_entry.inode_reference, &child_inode);
+
+        //IF the number of references is now 0, clean the file inode
+        if(child_inode.n_references <= 0)
+        {
+            oufs_clean_inode(child_dir_entry.inode_reference);
+        }
+
+    }
+
+    return 0;
+}
