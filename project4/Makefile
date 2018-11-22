@@ -4,7 +4,7 @@ CFLAGS = -c -I -O3 -Wall
 OUFS = oufs_lib_support.o vdisk.o
 
 #Default to make the executable
-all: zinspect zformat zfilez zrmdir zmkdir ztouch zcreate zappend zmore zremove
+all: zinspect zformat zfilez zrmdir zmkdir ztouch zcreate zappend zmore zremove zlink
 
 #Clean the project workspace
 clean: 
@@ -19,6 +19,7 @@ clean:
 	rm zappend
 	rm zmore
 	rm zremove
+	rm zlink
 
 #Convert the C files to O files
 .c.o:
@@ -63,3 +64,7 @@ zmore: zmore.o $(OUFS)
 #Build the zremove program
 zremove: zremove.o $(OUFS)
 	$(CC) zremove.o $(OUFS) -o zremove
+	
+#Build the zlink program
+zlink: zlink.o $(OUFS)
+	$(CC) zlink.o $(OUFS) -o zlink

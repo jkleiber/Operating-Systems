@@ -1253,7 +1253,7 @@ int oufs_remove(char *cwd, char *path)
         //Remove this entry from the list
         for(i = 0; i < DIRECTORY_ENTRIES_PER_BLOCK; ++i)
         {
-            if(parent_dir_block.directory.entry[i].inode_reference == child_dir_entry.inode_reference)
+            if(!strcmp(parent_dir_block.directory.entry[i].name, child_dir_entry.name))
             {
                 oufs_clean_directory_entry(&parent_dir_block.directory.entry[i]);
                 break;
@@ -1274,9 +1274,122 @@ int oufs_remove(char *cwd, char *path)
         //IF the number of references is now 0, clean the file inode
         if(child_inode.n_references <= 0)
         {
+            //Deallocate the data blocks
+            for(i = 0; i < DIRECTORY_ENTRIES_PER_BLOCK; ++i)
+            {
+                oufs_deallocate_block(child_inode.data[i]);
+            }
+
+            //Clean and deallocate the inode
             oufs_clean_inode(child_dir_entry.inode_reference);
+            oufs_deallocate_inode(child_dir_entry.inode_reference);
         }
 
+    }
+
+    return 0;
+}
+
+/**
+ * 
+ */
+int oufs_link(char *cwd, char *path_src, char *path_dst)
+{
+    /* Declare local variables */
+    BLOCK_REFERENCE child_block_ref;
+    DIRECTORY_ENTRY child_dir_entry;
+    int             i;
+    BLOCK           parent_dir_block;
+    INODE           parent_inode;
+    INODE_REFERENCE parent_ref;
+    int             result;
+    DIRECTORY_ENTRY source_dir_entry;
+    INODE           source_inode;
+
+    //Attempt to find the file in the filesystem
+    result = oufs_find_file(cwd, path_src, &parent_ref, &child_block_ref, &child_dir_entry);
+
+    //IF the source file exists, try to link
+    if(!result)
+    {
+        //Get the child's inode data
+        oufs_read_inode_by_reference(child_dir_entry.inode_reference, &source_inode);
+
+        //If the source file is not a file, print an error
+        if(source_inode.type != IT_FILE)
+        {
+            fprintf(stderr, "Error: source file is actually a directory\n");
+            return(-2);
+        }
+
+        //Store the directory entry we found for later 
+        source_dir_entry = child_dir_entry;
+
+        //Find the linking destination
+        result = oufs_find_file(cwd, path_dst, &parent_ref, &child_block_ref, &child_dir_entry);
+
+        //if the linking destination file already exists, print an error
+        if(!result)
+        {
+            fprintf(stderr, "Error: linking destination file already exists.\n");
+            return(-3);
+        }
+        //If the path to the linking destination does not exist, print an error
+        else if(result > 0)
+        {
+            fprintf(stderr, "Error: path to linking destination does not exist\n");
+            return(-4);
+        }
+        //Otherwise, keep trying to link the files
+        else
+        {
+            //Read the inode of the parent directory
+            oufs_read_inode_by_reference(parent_ref, &parent_inode);
+
+            //IF the parent is full, print an error
+            if(parent_inode.size == DIRECTORY_ENTRIES_PER_BLOCK)
+            {
+                fprintf(stderr, "Error: directory full\n");
+                return(-5);
+            }
+
+            //Read the directory entries of the parent inode
+            vdisk_read_block(parent_inode.data[0], &parent_dir_block);
+
+            //Look for a place to put the linked file
+            for(i = 0; i < DIRECTORY_ENTRIES_PER_BLOCK; ++i)
+            {
+                //IF the block is unallocated, this is the place to put the entry
+                if(parent_dir_block.directory.entry[i].inode_reference == UNALLOCATED_INODE)
+                {
+                    break;
+                }
+            }
+
+            //Set the parent directory entry to point to the source file
+            parent_dir_block.directory.entry[i] = source_dir_entry;
+            strncpy(parent_dir_block.directory.entry[i].name, basename(path_dst), FILE_NAME_SIZE - 1); 
+            parent_dir_block.directory.entry[i].name[FILE_NAME_SIZE - 1] = '\0';
+
+            //Add size to the parent inode's size
+            parent_inode.size++;
+
+            //Write the change to disk
+            vdisk_write_block(parent_inode.data[0], &parent_dir_block);
+            oufs_write_inode_by_reference(parent_ref, &parent_inode);
+
+            //Increment the number of references in the source inode
+            source_inode.n_references++;
+
+            //Write the changes to the inodes to the disk
+            oufs_write_inode_by_reference(source_dir_entry.inode_reference, &source_inode);
+        }
+    }
+    //IF the source file does not exist, print an error
+    else
+    {
+        fprintf(stderr, "Error: file to link does not exist\n");
+        return(-1);
     }
 
     return 0;
