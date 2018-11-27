@@ -457,6 +457,13 @@ int oufs_rmdir(char *cwd, char *path)
         return (-1);
     }
 
+    //Don't allow users to remove root
+    if(dir_entry.inode_reference == 0)
+    {
+        fprintf(stderr, "Error: cannot remove root.\n");
+        return (-1);
+    }
+
     //Get the inode of the directory entry
     oufs_read_inode_by_reference(dir_entry.inode_reference, &inode);
 
@@ -909,7 +916,13 @@ INODE_REFERENCE get_next_inode(INODE_REFERENCE inode_ref, char *file, BLOCK_REFE
 }
 
 /**
+ * oufs_fopen - open a file and return a file pointer for read/write depending on mode
  * 
+ * @param *cwd: current working directory
+ * @param *path: path to the file to open
+ * @param *mode: mode of read/write/append
+ * @return a pointer to an OUFILE that can be used by oufs_fread, oufs_fwrite, 
+ *         and can be closed by oufs_fclose
  */
 OUFILE *oufs_fopen(char *cwd, char *path, char *mode)
 {
@@ -922,6 +935,7 @@ OUFILE *oufs_fopen(char *cwd, char *path, char *mode)
     OUFILE         *file;               //file to open
     int             i;                  //iteration variable
     char           *name;               //name of the new file
+    int             num_refs;           //number of references to an inode
     INODE           parent_inode;       //inode of the parent directory
     INODE_REFERENCE parent_ref;         //reference to the parent inode of the touched file
     int             result;             //result of oufs operations
@@ -969,14 +983,19 @@ OUFILE *oufs_fopen(char *cwd, char *path, char *mode)
             //Deallocate data blocks
             for(i = 0; i < BLOCKS_PER_INODE; ++i)
             {
-                oufs_deallocate_block(child_inode.data[i]);
+                //Only deallocate allocated blocks
+                if(child_inode.data[i] != UNALLOCATED_BLOCK)
+                {
+                    oufs_deallocate_block(child_inode.data[i]);
+                }
             }
 
-            //Reset this inode's data
+            //Reset this inode's data, but make sure to maintain the number of references
+            num_refs = child_inode.n_references;
             oufs_clean_inode(file->inode_reference);
             oufs_read_inode_by_reference(file->inode_reference, &child_inode);
             child_inode.type = IT_FILE;
-            child_inode.n_references = 1;
+            child_inode.n_references = num_refs;
             oufs_write_inode_by_reference(file->inode_reference, &child_inode);
         }
         //IF we are reading, put the offset at the start
@@ -1053,7 +1072,8 @@ OUFILE *oufs_fopen(char *cwd, char *path, char *mode)
 }
 
 /**
- * 
+ * oufs_fclose - closes a file pointer
+ * @param *fp: file pointer that will be closed and freed from memory
  */
 void oufs_fclose(OUFILE *fp)
 {
@@ -1063,7 +1083,12 @@ void oufs_fclose(OUFILE *fp)
 }
 
 /**
+ * oufs_fwrite - writes a buffer of certain length to a file pointer
  * 
+ * @param *fp: the file pointer to write to
+ * @param *buf: data buffer
+ * @param len: length of the data buffer
+ * @return the number of bytes written
  */
 int oufs_fwrite(OUFILE *fp, unsigned char *buf, int len)
 {
@@ -1137,7 +1162,12 @@ int oufs_fwrite(OUFILE *fp, unsigned char *buf, int len)
 }
 
 /**
+ * oufs_fread - reads a file pointer's contents into a buffer of certain length
  * 
+ * @param *fp: file pointer to read
+ * @param *buf: buffer to read data into
+ * @param len: length of the buffer to read
+ * @return the number of bytes read
  */
 int oufs_fread(OUFILE *fp, unsigned char *buf, int len)
 {
@@ -1210,19 +1240,23 @@ int oufs_fread(OUFILE *fp, unsigned char *buf, int len)
 }
 
 /**
+ * oufs_remove - removes a file at a path given a current working directory
  * 
+ * @param *cwd: current working directory
+ * @param *path: pathe ot the file to remove
+ * @return 0 on success, non-zero on error
  */
 int oufs_remove(char *cwd, char *path)
 {
     /* Declare local variables */
-    BLOCK_REFERENCE child_block_ref;
-    DIRECTORY_ENTRY child_dir_entry;
-    INODE           child_inode;
-    int             i;
-    BLOCK           parent_dir_block;
-    INODE           parent_inode;
-    INODE_REFERENCE parent_ref;
-    int             result;
+    BLOCK_REFERENCE child_block_ref;    //reference to the block to remove
+    DIRECTORY_ENTRY child_dir_entry;    //the directory entry to remove
+    INODE           child_inode;        //the inode of the item to remove
+    int             i;                  //iteration variable
+    BLOCK           parent_dir_block;   //parent directory of the file to remove
+    INODE           parent_inode;       //inode of parent directory
+    INODE_REFERENCE parent_ref;         //parent inode's reference
+    int             result;             //result of the system operations
 
     //Attempt to find the file in the filesystem
     result = oufs_find_file(cwd, path, &parent_ref, &child_block_ref, &child_dir_entry);
@@ -1277,7 +1311,11 @@ int oufs_remove(char *cwd, char *path)
             //Deallocate the data blocks
             for(i = 0; i < DIRECTORY_ENTRIES_PER_BLOCK; ++i)
             {
-                oufs_deallocate_block(child_inode.data[i]);
+                //Only deallocate blocks that are allocated
+                if(child_inode.data[i] != UNALLOCATED_BLOCK)
+                {
+                    oufs_deallocate_block(child_inode.data[i]);
+                }
             }
 
             //Clean and deallocate the inode
@@ -1291,20 +1329,25 @@ int oufs_remove(char *cwd, char *path)
 }
 
 /**
+ * oufs_link - links a file to another file. Creates a file that references another inode's data
  * 
+ * @param *cwd: current working directory
+ * @param *path_src: the path to the data to reference
+ * @param *path_dst: the path to the newly linked file
+ * @return 0 if success, non-zero if error
  */
 int oufs_link(char *cwd, char *path_src, char *path_dst)
 {
     /* Declare local variables */
-    BLOCK_REFERENCE child_block_ref;
-    DIRECTORY_ENTRY child_dir_entry;
-    int             i;
-    BLOCK           parent_dir_block;
-    INODE           parent_inode;
-    INODE_REFERENCE parent_ref;
-    int             result;
-    DIRECTORY_ENTRY source_dir_entry;
-    INODE           source_inode;
+    BLOCK_REFERENCE child_block_ref;    //a block with relevant file data
+    DIRECTORY_ENTRY child_dir_entry;    //directory entry of a file
+    int             i;                  //iteration variable
+    BLOCK           parent_dir_block;   //directory data of a parent directory of a file
+    INODE           parent_inode;       //parent directory inode 
+    INODE_REFERENCE parent_ref;         //reference to parent directory's inode
+    int             result;             //result of file ops
+    DIRECTORY_ENTRY source_dir_entry;   //directory entry of source data
+    INODE           source_inode;       //inode of the source file
 
     //Attempt to find the file in the filesystem
     result = oufs_find_file(cwd, path_src, &parent_ref, &child_block_ref, &child_dir_entry);

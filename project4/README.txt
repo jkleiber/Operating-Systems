@@ -14,4 +14,3 @@ the file system (i.e. not assuming everything is a directory).
 
 References
 So far I have only discussed the project in passing with Trey Sullivent
-
